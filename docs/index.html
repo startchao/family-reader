@@ -10,368 +10,138 @@
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0f1117;
-    --card: #1a1d27;
-    --border: #2a2d3a;
-    --text: #e8e6e0;
-    --muted: #7a7890;
-    --tony:  #c0392b;
-    --angel: #7d3c98;
-    --jill:  #16a085;
-    --guan:  #2980b9;
+    --bg: #0f1117; --card: #1a1d27; --border: #2a2d3a; --text: #e8e6e0; --muted: #7a7890;
+    --tony: #c0392b; --angel: #7d3c98; --jill: #16a085; --guan: #2980b9;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    font-family: 'Source Serif 4', serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 48px 20px 80px;
+    font-family: 'Source Serif 4', serif; background: var(--bg); color: var(--text);
+    min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 48px 20px 80px;
   }
-
-  /* ── Hero ── */
-  .hero { text-align: center; margin-bottom: 40px; }
+  .hero { text-align: center; margin-bottom: 40px; position: relative; width: 100%; max-width: 960px; }
   .hero-label { font-size: 12px; text-transform: uppercase; letter-spacing: 2px; color: var(--muted); margin-bottom: 12px; }
   .hero h1 { font-family: 'Playfair Display', serif; font-size: clamp(28px, 6vw, 40px); margin-bottom: 10px; }
   .hero p { color: #9a98b0; font-size: 15px; }
-  .today-badge {
-    display: inline-block;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 5px 18px;
-    font-size: 13px;
-    color: var(--muted);
-    margin-top: 12px;
-  }
+  .today-badge { display: inline-block; background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 5px 18px; font-size: 13px; color: var(--muted); margin-top: 12px; }
 
-  /* ── Section title ── */
-  .section-title {
-    width: 100%;
-    max-width: 960px;
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    color: var(--muted);
-    margin: 32px 0 16px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .section-title .dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    display: inline-block;
-  }
-  .dot-auto  { background: #27ae60; box-shadow: 0 0 6px #27ae60; }
+  /* ⚙️ API 設定按鈕 */
+  .settings-btn { position: absolute; top: 0; right: 0; background: none; border: 1px solid var(--border); color: var(--muted); cursor: pointer; padding: 6px 12px; border-radius: 8px; font-size: 13px; transition: 0.2s; }
+  .settings-btn:hover { border-color: var(--text); color: var(--text); }
+
+  .section-title { width: 100%; max-width: 960px; font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); margin: 32px 0 16px; padding-bottom: 10px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+  .dot-auto { background: #27ae60; box-shadow: 0 0 6px #27ae60; }
   .dot-manual { background: var(--muted); }
 
-  /* ── Cards grid ── */
-  .cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-    gap: 18px;
-    width: 100%;
-    max-width: 960px;
-  }
-
-  .card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 22px 20px 18px;
-    text-decoration: none;
-    color: var(--text);
-    transition: transform .15s, border-color .15s;
-    position: relative;
-    overflow: hidden;
-    display: block;
-  }
-  .card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 3px;
-    background: var(--c);
-  }
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 18px; width: 100%; max-width: 960px; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 22px 20px 18px; text-decoration: none; color: var(--text); transition: transform .15s, border-color .15s; position: relative; overflow: hidden; display: block; }
+  .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--c); }
   .card:hover { transform: translateY(-3px); border-color: #3a3d4a; }
-
-  .card.tony  { --c: var(--tony);  }
-  .card.angel { --c: var(--angel); }
-  .card.jill  { --c: var(--jill);  }
-  .card.guan  { --c: var(--guan);  }
-
+  .card.tony { --c: var(--tony); } .card.angel { --c: var(--angel); } .card.jill { --c: var(--jill); } .card.guan { --c: var(--guan); }
   .card-icon { font-size: 28px; margin-bottom: 8px; }
-  .card-badge {
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: .7px;
-    color: var(--c);
-    font-weight: 600;
-    margin-bottom: 6px;
-  }
+  .card-badge { font-size: 11px; text-transform: uppercase; letter-spacing: .7px; color: var(--c); font-weight: 600; margin-bottom: 6px; }
   .card h2 { font-family: 'Playfair Display', serif; font-size: 20px; margin-bottom: 6px; }
   .card-desc { font-size: 12px; color: var(--muted); margin-bottom: 10px; line-height: 1.5; }
   .card-status { font-size: 12px; color: #9a98b0; }
   .card-status.ready { color: #27ae60; }
   .card-status.missing { color: #e67e22; }
-
-  .card-stats {
-    display: flex;
-    gap: 12px;
-    font-size: 12px;
-    color: var(--muted);
-    margin-top: 10px;
-    padding-top: 10px;
-    border-top: 1px solid var(--border);
-  }
+  .card-stats { display: flex; gap: 12px; font-size: 12px; color: var(--muted); margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
   .card-stats strong { color: var(--text); }
-
-  /* manual card style — slightly dimmer top bar */
   .card.manual::before { opacity: .5; }
 
-  /* ── Archive ── */
-  .archive {
-    width: 100%;
-    max-width: 960px;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 24px;
-    margin-top: 8px;
-  }
-  .archive h3 {
-    font-family: 'Playfair Display', serif;
-    font-size: 16px;
-    color: var(--muted);
-    margin-bottom: 16px;
-  }
+  .archive { width: 100%; max-width: 960px; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-top: 8px; }
+  .archive h3 { font-family: 'Playfair Display', serif; font-size: 16px; color: var(--muted); margin-bottom: 16px; }
   .archive-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
-  .archive-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-size: 13px;
-    color: var(--muted);
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--border);
-  }
-  .archive-item:last-child { border-bottom: none; padding-bottom: 0; }
+  .archive-item { display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--muted); padding-bottom: 10px; border-bottom: 1px solid var(--border); }
   .archive-date { color: var(--text); min-width: 100px; }
   .archive-links { display: flex; gap: 8px; flex-wrap: wrap; }
-  .archive-links a {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 3px 10px;
-    font-size: 12px;
-    color: var(--muted);
-    text-decoration: none;
-    transition: color .12s, border-color .12s;
-  }
-  .archive-links a:hover { color: var(--text); border-color: #4a4d5a; }
-
-  .footer { margin-top: 40px; color: #3a3a50; font-size: 12px; text-align: center; line-height: 1.8; }
+  .archive-links a { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 3px 10px; font-size: 12px; color: var(--muted); text-decoration: none; }
+  .footer { margin-top: 40px; color: #3a3a50; font-size: 12px; text-align: center; }
 </style>
 </head>
 <body>
 
 <div class="hero">
+  <button class="settings-btn" onclick="setGlobalKey()">⚙️ 設定 API Key</button>
   <div class="hero-label">Family English Reader</div>
   <h1>今天要讀英文了嗎？</h1>
   <p>每天自動備好一篇，也可以隨時手動生成新文章</p>
   <div class="today-badge" id="today-badge">📅 載入中...</div>
 </div>
 
-<!-- ── 今日自動文章 ── -->
-<div class="section-title">
-  <span class="dot dot-auto"></span>
-  今日自動文章 &nbsp;·&nbsp; 每天早上 06:00 自動生成
-</div>
+<div class="section-title"><span class="dot dot-auto"></span>今日自動文章 &nbsp;·&nbsp; 06:00 生成</div>
+<div class="cards" id="daily-cards"></div>
 
-<div class="cards" id="daily-cards">
-  <!-- Filled by JS -->
-</div>
+<div class="section-title" style="margin-top:40px"><span class="dot dot-manual"></span>隨時手動生成 &nbsp;·&nbsp; 即時全新文章</div>
+<div class="cards" id="manual-cards">
+  </div>
 
-<!-- ── 手動生成 ── -->
-<div class="section-title" style="margin-top:40px">
-  <span class="dot dot-manual"></span>
-  隨時手動生成 &nbsp;·&nbsp; 想讀就讀，每次全新文章
-</div>
+<div class="section-title" style="margin-top:40px"><span class="dot dot-manual"></span>過去文章存檔</div>
+<div class="archive"><ul class="archive-list" id="archive-list"></ul></div>
 
-<div class="cards">
-  <a class="card tony manual" href="tony.html">
-    <div class="card-icon">📰</div>
-    <div class="card-badge">B2–C1 · FLPT</div>
-    <h2>Tony</h2>
-    <div class="card-desc">地緣政治 · 軍事 · 國際安全</div>
-    <div class="card-stats">
-      <span>已讀 <strong id="m-tony-count">—</strong></span>
-      <span>答對率 <strong id="m-tony-rate">—</strong></span>
-    </div>
-  </a>
-  <a class="card angel manual" href="angel.html">
-    <div class="card-icon">🌸</div>
-    <div class="card-badge">B2–C1</div>
-    <h2>Angel</h2>
-    <div class="card-desc">生活 · 文化 · 健康 · 旅遊</div>
-    <div class="card-stats">
-      <span>已讀 <strong id="m-angel-count">—</strong></span>
-      <span>答對率 <strong id="m-angel-rate">—</strong></span>
-    </div>
-  </a>
-  <a class="card jill manual" href="jill.html">
-    <div class="card-icon">📖</div>
-    <div class="card-badge">B2 · 國高中</div>
-    <h2>Jill</h2>
-    <div class="card-desc">時事 · 科技 · 環境 · 跨文化</div>
-    <div class="card-stats">
-      <span>已讀 <strong id="m-jill-count">—</strong></span>
-      <span>答對率 <strong id="m-jill-rate">—</strong></span>
-    </div>
-  </a>
-  <a class="card guan manual" href="guan.html">
-    <div class="card-icon">🚀</div>
-    <div class="card-badge">A2–B1 · 小學—國中</div>
-    <h2>Guan</h2>
-    <div class="card-desc">動物 · 自然 · 運動 · 趣味知識</div>
-    <div class="card-stats">
-      <span>已讀 <strong id="m-guan-count">—</strong></span>
-      <span>答對率 <strong id="m-guan-rate">—</strong></span>
-    </div>
-  </a>
-</div>
-
-<!-- ── Archive ── -->
-<div class="section-title" style="margin-top:40px">
-  <span class="dot dot-manual"></span>
-  過去文章存檔
-</div>
-
-<div class="archive">
-  <ul class="archive-list" id="archive-list">
-    <li style="color:var(--muted);font-size:13px">載入中...</li>
-  </ul>
-</div>
-
-<div class="footer">
-  自動文章由 GitHub Actions + Google Gemini 2.0 Flash 每日生成<br>
-  手動文章即時生成，不佔用每日配額以外的額度
-</div>
+<div class="footer">由 GitHub Actions + Gemini 每日生成</div>
 
 <script>
 const TODAY = new Date().toISOString().slice(0, 10);
 document.getElementById('today-badge').textContent = '📅 ' + TODAY;
 
 const MEMBERS = [
-  { id: 'tony',  name: 'Tony',  icon: '📰', badge: 'B2–C1 · FLPT', cls: 'tony',  desc: '地緣政治 · 軍事 · 國際安全',  mkey: 'flpt_tony'  },
-  { id: 'angel', name: 'Angel', icon: '🌸', badge: 'B2–C1',         cls: 'angel', desc: '生活 · 文化 · 健康 · 旅遊',    mkey: 'flpt_angel' },
-  { id: 'jill',  name: 'Jill',  icon: '📖', badge: 'B2 · 國高中',   cls: 'jill',  desc: '時事 · 科技 · 環境',           mkey: 'flpt_jill'  },
-  { id: 'guan',  name: 'Guan',  icon: '🚀', badge: 'A2–B1 · 小學—國中', cls: 'guan', desc: '動物 · 自然 · 運動 · 趣味', mkey: 'flpt_guan'  },
+  { id: 'tony',  name: 'Tony',  icon: '📰', badge: 'B2–C1 · FLPT', cls: 'tony',  desc: '地緣政治 · 軍事 · 安全', mkey: 'flpt_tony',  dkey: 'daily_tony' },
+  { id: 'angel', name: 'Angel', icon: '🌸', badge: 'B2–C1',         cls: 'angel', desc: '生活 · 文化 · 旅遊',     mkey: 'flpt_angel', dkey: 'daily_angel' },
+  { id: 'jill',  name: 'Jill',  icon: '📖', badge: 'B2 · 國高中',   cls: 'jill',  desc: '時事 · 科技 · 環境',     mkey: 'flpt_jill',  dkey: 'daily_jill' },
+  { id: 'guan',  name: 'Guan',  icon: '🚀', badge: 'A2–B1 · 國小中', cls: 'guan', desc: '動物 · 自然 · 趣味',     mkey: 'flpt_guan',  dkey: 'daily_guan' },
 ];
 
-// ── Daily cards ──────────────────────────────────────────────────────────────
+function setGlobalKey() {
+  const currentKey = localStorage.getItem('gemini_api_key') || "";
+  const key = prompt("請輸入 Gemini API Key (全站共用)：", currentKey);
+  if (key !== null) { localStorage.setItem('gemini_api_key', key.trim()); alert("設定成功！"); }
+}
+
+// 渲染卡片邏輯 (合併自動與手動)
 const dailyContainer = document.getElementById('daily-cards');
+const manualContainer = document.getElementById('manual-cards');
+
 MEMBERS.forEach(m => {
-  const filename = `${m.id}_${TODAY}.html`;
-  // Try to detect if file exists by attempting fetch (HEAD)
-  const card = document.createElement('a');
-  card.className = `card ${m.cls}`;
-  card.href = filename;
-  card.innerHTML = `
-    <div class="card-icon">${m.icon}</div>
-    <div class="card-badge">${m.badge}</div>
-    <h2>${m.name}</h2>
-    <div class="card-desc">${m.desc}</div>
-    <div class="card-status" id="status-${m.id}">⏳ 確認中...</div>
-    <div class="card-stats">
-      <span>已讀 <strong id="d-${m.id}-count">—</strong></span>
-      <span>答對率 <strong id="d-${m.id}-rate">—</strong></span>
-    </div>`;
-  dailyContainer.appendChild(card);
+  // 自動卡片
+  const dFilename = `${m.id}_${TODAY}.html`;
+  const ds = JSON.parse(localStorage.getItem(m.dkey) || '{"count":0,"totalQ":0,"correctQ":0}');
+  const dCard = document.createElement('a');
+  dCard.className = `card ${m.cls}`;
+  dCard.href = dFilename;
+  dCard.innerHTML = `<div class="card-icon">${m.icon}</div><div class="card-badge">${m.badge}</div><h2>${m.name}</h2><div class="card-desc">${m.desc}</div><div class="card-status" id="status-${m.id}">⏳ 確認中...</div><div class="card-stats"><span>已讀 <strong>${ds.count} 篇</strong></span><span>答對率 <strong>${ds.totalQ > 0 ? Math.round(ds.correctQ/ds.totalQ*100)+'%' : '—'}</strong></span></div>`;
+  dailyContainer.appendChild(dCard);
+  
+  fetch(dFilename, { method: 'HEAD' }).then(r => {
+    const s = document.getElementById(`status-${m.id}`);
+    if(r.ok) { s.textContent='✅ 文章已就緒'; s.className='card-status ready'; }
+    else { s.textContent='⏳ 尚未生成'; s.className='card-status missing'; dCard.style.opacity='.6'; dCard.style.pointerEvents='none'; }
+  }).catch(() => {});
 
-  // Check if today's file exists
-  fetch(filename, { method: 'HEAD' })
-    .then(r => {
-      const statusEl = document.getElementById(`status-${m.id}`);
-      if (r.ok) {
-        statusEl.textContent = '✅ 今日文章已就緒';
-        statusEl.className = 'card-status ready';
-      } else {
-        statusEl.textContent = '⏳ 今日文章尚未生成';
-        statusEl.className = 'card-status missing';
-        card.style.opacity = '.6';
-        card.style.pointerEvents = 'none';
-      }
-    })
-    .catch(() => {
-      const statusEl = document.getElementById(`status-${m.id}`);
-      statusEl.textContent = '⏳ 今日文章尚未生成';
-      statusEl.className = 'card-status missing';
-      card.style.opacity = '.6';
-      card.style.pointerEvents = 'none';
-    });
-
-  // Stats from localStorage (daily key)
-  const ds = JSON.parse(localStorage.getItem(`daily_${m.id}`) || '{"count":0,"totalQ":0,"correctQ":0}');
-  const dcount = document.getElementById(`d-${m.id}-count`);
-  const drate  = document.getElementById(`d-${m.id}-rate`);
-  if (dcount) dcount.textContent = ds.count + ' 篇';
-  if (drate)  drate.textContent  = ds.totalQ > 0 ? Math.round(ds.correctQ / ds.totalQ * 100) + '%' : '—';
+  // 手動卡片
+  const ms = JSON.parse(localStorage.getItem(m.mkey) || '{"count":0,"totalQ":0,"correctQ":0}');
+  const mCard = document.createElement('a');
+  mCard.className = `card ${m.cls} manual`;
+  mCard.href = `${m.id}.html`;
+  mCard.innerHTML = `<div class="card-icon">${m.icon}</div><div class="card-badge">${m.badge}</div><h2>${m.name}</h2><div class="card-desc">${m.desc}</div><div class="card-stats"><span>已讀 <strong>${ms.count} 篇</strong></span><span>答對率 <strong>${ms.totalQ > 0 ? Math.round(ms.correctQ/ms.totalQ*100)+'%' : '—'}</strong></span></div>`;
+  manualContainer.appendChild(mCard);
 });
-
-// ── Manual stats ─────────────────────────────────────────────────────────────
-MEMBERS.forEach(m => {
-  const s = JSON.parse(localStorage.getItem(m.mkey) || '{"count":0,"totalQ":0,"correctQ":0}');
-  const ce = document.getElementById(`m-${m.id}-count`);
-  const re = document.getElementById(`m-${m.id}-rate`);
-  if (ce) ce.textContent = s.count + ' 篇';
-  if (re) re.textContent = s.totalQ > 0 ? Math.round(s.correctQ / s.totalQ * 100) + '%' : '—';
-});
-
-// ── Archive ───────────────────────────────────────────────────────────────────
-// Detect past dates by trying to fetch tony_YYYY-MM-DD.html for last 30 days
-const archiveList = document.getElementById('archive-list');
-archiveList.innerHTML = '';
 
 async function buildArchive() {
-  const dates = [];
-  const now = new Date();
-  for (let i = 0; i < 30; i++) {
-    const d = new Date(now);
-    d.setDate(d.getDate() - i);
-    dates.push(d.toISOString().slice(0, 10));
-  }
-
-  let found = 0;
+  const archiveList = document.getElementById('archive-list');
+  const dates = []; const now = new Date();
+  for (let i = 0; i < 30; i++) { const d = new Date(now); d.setDate(d.getDate() - i); dates.push(d.toISOString().slice(0, 10)); }
   for (const date of dates) {
     try {
       const r = await fetch(`tony_${date}.html`, { method: 'HEAD' });
       if (!r.ok) continue;
-      found++;
-      const li = document.createElement('li');
-      li.className = 'archive-item';
-      const isToday = date === TODAY ? ' 🔴' : '';
-      let links = '';
-      for (const m of MEMBERS) {
-        links += `<a href="${m.id}_${date}.html">${m.icon} ${m.name}</a>`;
-      }
-      li.innerHTML = `
-        <span class="archive-date">${date}${isToday}</span>
-        <div class="archive-links">${links}</div>`;
+      const li = document.createElement('li'); li.className = 'archive-item';
+      let links = ''; MEMBERS.forEach(m => { links += `<a href="${m.id}_${date}.html">${m.icon} ${m.name}</a>`; });
+      li.innerHTML = `<span class="archive-date">${date}${date===TODAY?' 🔴':''}</span><div class="archive-links">${links}</div>`;
       archiveList.appendChild(li);
-    } catch (e) { /* skip */ }
-  }
-  if (found === 0) {
-    archiveList.innerHTML = '<li style="color:var(--muted);font-size:13px">尚無過去文章，明天早上 06:00 第一篇就會自動出現。</li>';
+    } catch (e) {}
   }
 }
-
 buildArchive();
 </script>
 </body>
