@@ -192,6 +192,12 @@ color: var(--ink);
 .vocab-def { font-size: 14px; }
 .vocab-zh { color: var(--muted); font-size: 13px; margin-top: 4px; }
 
+/* Grammar Analysis */
+.grammar-item { background:var(--code-bg); border-left:3px solid var(--accent); border-radius:8px; padding:14px 16px; margin-bottom:12px; }
+.grammar-name { font-weight:700; color:var(--accent); font-size:14px; margin-bottom:6px; }
+.grammar-quote { font-style:italic; color:var(--muted); font-size:15px; margin-bottom:8px; padding:6px 10px; background:rgba(255,255,255,0.6); border-radius:4px; }
+.grammar-exp { font-size:14px; line-height:1.7; }
+
 /* Quiz */
 .quiz-item { margin-bottom: 24px; }
 .quiz-q {
@@ -394,9 +400,21 @@ header h1 { font-size: 16px; }
   </div>
 </div>
 
+<!-- Article Analysis -->
+<div class="section" id="analysis-section" style="display:none">
+  <div class="section-label">🔍 文章解析</div>
+  <div id="art-analysis" style="color:var(--ink); line-height:1.9;"></div>
+</div>
+
+<!-- Grammar Analysis -->
+<div class="section" id="grammar-section" style="display:none">
+  <div class="section-label">📐 文法解析</div>
+  <div id="grammar-list"></div>
+</div>
+
 <!-- Vocabulary -->
 <div class="section">
-  <div class="section-label">📚 Key Vocabulary</div>
+  <div class="section-label">📚 Key Vocabulary & Phrases</div>
   <div class="vocab-grid" id="vocab-grid"></div>
 </div>
 
@@ -460,8 +478,14 @@ OUTPUT FORMAT (use these exact markers):
 [350-450 word analytical essay, paragraphs only, no bullet points, B2-C1 vocabulary and grammar throughout, naturally include at least one inversion and one nominalization]
 ===TRANSLATION===
 [Full Traditional Chinese translation, professional and faithful]
+===ANALYSIS===
+[文章解析：用3-4句繁體中文分析本文的核心論點、文章架構與作者論述邏輯，幫助讀者掌握文章主旨]
+===GRAMMAR===
+ITEM1: [Grammar construction name]|[Exact quote from article]|[English explanation of the structure and why it's used]|[繁體中文語法說明]
+ITEM2: [Grammar construction name]|[Exact quote from article]|[English explanation]|[繁體中文語法說明]
+ITEM3: [Grammar construction name]|[Exact quote from article]|[English explanation]|[繁體中文語法說明]
 ===VOCAB===
-[Exactly 8 vocabulary items: WORD|/IPA/|English definition|中文意思|Professional example sentence in a military/geopolitical context]
+[Exactly 8 vocabulary items (words OR phrases/idioms from the article): WORD_OR_PHRASE|/IPA/|English definition|中文意思|Professional example sentence in a military/geopolitical context]
 ===QUIZ===
 Q1: [Inference question — reading between the lines, not directly stated in the article]
 A) [Option A]
@@ -576,6 +600,14 @@ function parseResponse(raw) {
     return m ? m[1].trim() : '';
   };
 
+  const analysis = get('ANALYSIS');
+
+  const grammarRaw = get('GRAMMAR').split('\n').filter(l => l.includes('|'));
+  const grammar = grammarRaw.map(line => {
+    const [name, quote, expEn, expZh] = line.split('|');
+    return { name: name?.trim(), quote: quote?.trim(), expEn: expEn?.trim(), expZh: expZh?.trim() };
+  }).filter(v => v.name);
+
   const vocabRaw = get('VOCAB').split('\n').filter(l => l.includes('|'));
   const vocab = vocabRaw.map(line => {
     const [word, ipa, def, zh, ex] = line.split('|');
@@ -601,6 +633,8 @@ function parseResponse(raw) {
     title: get('TITLE'),
     body: get('ARTICLE'),
     zh: get('TRANSLATION'),
+    analysis,
+    grammar,
     vocab,
     questions
   };
@@ -620,6 +654,24 @@ function renderArticle(d) {
   zhEl.innerHTML = d.zh.split('\n\n').filter(Boolean).map(p => `<p>${p}</p>`).join('');
   document.getElementById('translation-wrap').classList.remove('visible');
   document.getElementById('btn-toggle-zh').textContent = '🈶 顯示中文翻譯';
+
+  // Analysis
+  if (d.analysis) {
+    document.getElementById('art-analysis').innerHTML =
+      d.analysis.split('\n').filter(Boolean).map(p => `<p>${p}</p>`).join('');
+    document.getElementById('analysis-section').style.display = 'block';
+  }
+
+  // Grammar
+  if (d.grammar?.length) {
+    document.getElementById('grammar-list').innerHTML = d.grammar.map(g => `
+      <div class="grammar-item">
+        <div class="grammar-name">${g.name}</div>
+        <div class="grammar-quote">"${g.quote}"</div>
+        <div class="grammar-exp">${g.expEn}<br><span style="color:var(--muted)">📌 ${g.expZh}</span></div>
+      </div>`).join('');
+    document.getElementById('grammar-section').style.display = 'block';
+  }
 
   // Vocab
   const vocabEl = document.getElementById('vocab-grid');

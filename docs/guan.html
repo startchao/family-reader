@@ -134,6 +134,12 @@ border-left: 4px solid var(--accent);
 .vocab-def { font-size: 14px; }
 .vocab-zh { color: var(--muted); font-size: 13px; margin-top: 4px; }
 
+/* Grammar Analysis */
+.grammar-item { background:var(--paper); border-left:3px solid var(--accent); border-radius:8px; padding:14px 16px; margin-bottom:12px; }
+.grammar-name { font-weight:800; color:var(--accent); font-size:14px; margin-bottom:6px; }
+.grammar-quote { font-style:italic; color:var(--muted); font-size:15px; margin-bottom:8px; padding:6px 10px; background:rgba(255,255,255,0.7); border-radius:4px; }
+.grammar-exp { font-size:14px; line-height:1.7; }
+
 .quiz-item { margin-bottom: 22px; }
 .quiz-q { font-family: ‘Nunito’, sans-serif; font-weight: 700; margin-bottom: 12px; font-size: 15px; line-height: 1.5; }
 .quiz-options { display: grid; gap: 8px; }
@@ -252,8 +258,20 @@ header { padding: 12px 14px; }
   </div>
 </div>
 
+<!-- Article Analysis -->
+<div class="section" id="analysis-section" style="display:none">
+  <div class="section-label">🔍 文章解析</div>
+  <div id="art-analysis" style="color:var(--ink); line-height:1.9;"></div>
+</div>
+
+<!-- Grammar Analysis -->
+<div class="section" id="grammar-section" style="display:none">
+  <div class="section-label">📐 文法解析</div>
+  <div id="grammar-list"></div>
+</div>
+
 <div class="section">
-  <div class="section-label">📚 New Words</div>
+  <div class="section-label">📚 New Words & Phrases</div>
   <div class="vocab-grid" id="vocab-grid"></div>
 </div>
 
@@ -309,11 +327,16 @@ OUTPUT FORMAT (use these exact markers):
 ===TITLE===
 [Fun, short title]
 ===ARTICLE===
-[150-180 word English article, short paragraphs, friendly tone]
+[100-130 word English article, short paragraphs, friendly tone]
 ===TRANSLATION===
 [Full Traditional Chinese translation, simple and natural for a 12-year-old]
+===ANALYSIS===
+[文章解析：用1-2句簡單的繁體中文說明這篇文章在講什麼，用國小生能理解的語言]
+===GRAMMAR===
+ITEM1: [Grammar point name]|[Short quote from article]|[Simple English explanation]|[簡單中文說明，適合12歲學生]
+ITEM2: [Grammar point name]|[Short quote]|[Simple English explanation]|[簡單中文說明]
 ===VOCAB===
-[Exactly 6 vocabulary items, one per line: WORD|/IPA/|Simple English meaning|中文意思|Short example sentence]
+[Exactly 6 vocabulary items (simple words OR short phrases from the article), one per line: WORD_OR_PHRASE|/IPA/|Simple English meaning|中文意思|Short example sentence]
 ===QUIZ===
 Q1: [Simple comprehension question based on the article]
 A) [Option A]
@@ -406,6 +429,14 @@ async function generateArticle() {
 
 function parseResponse(raw) {
   const get = (tag) => { const m = raw.match(new RegExp(`===${tag}===\\s*([\\s\\S]*?)(?:===|$)`)); return m ? m[1].trim() : ''; };
+  const analysis = get('ANALYSIS');
+
+  const grammarRaw = get('GRAMMAR').split('\n').filter(l => l.includes('|'));
+  const grammar = grammarRaw.map(line => {
+    const [name, quote, expEn, expZh] = line.split('|');
+    return { name: name?.trim(), quote: quote?.trim(), expEn: expEn?.trim(), expZh: expZh?.trim() };
+  }).filter(v => v.name);
+
   const vocab = get('VOCAB').split('\n').filter(l => l.includes('|')).map(line => {
     const [word, ipa, def, zh, ex] = line.split('|');
     return { word: word?.trim(), ipa: ipa?.trim(), def: def?.trim(), zh: zh?.trim(), ex: ex?.trim() };
@@ -422,7 +453,7 @@ function parseResponse(raw) {
     });
     if (q.text && q.answer) questions.push(q);
   });
-  return { title: get('TITLE'), body: get('ARTICLE'), zh: get('TRANSLATION'), vocab, questions };
+  return { title: get('TITLE'), body: get('ARTICLE'), zh: get('TRANSLATION'), analysis, grammar, vocab, questions };
 }
 
 function renderArticle(d) {
@@ -432,6 +463,24 @@ function renderArticle(d) {
   document.getElementById('art-zh').innerHTML = d.zh.split('\n\n').filter(Boolean).map(p => `<p>${p}</p>`).join('');
   document.getElementById('translation-wrap').classList.remove('visible');
   document.getElementById('btn-toggle-zh').textContent = '🈶 看中文翻譯';
+  // Analysis
+  if (d.analysis) {
+    document.getElementById('art-analysis').innerHTML =
+      d.analysis.split('\n').filter(Boolean).map(p => `<p>${p}</p>`).join('');
+    document.getElementById('analysis-section').style.display = 'block';
+  }
+
+  // Grammar
+  if (d.grammar?.length) {
+    document.getElementById('grammar-list').innerHTML = d.grammar.map(g => `
+      <div class="grammar-item">
+        <div class="grammar-name">${g.name}</div>
+        <div class="grammar-quote">"${g.quote}"</div>
+        <div class="grammar-exp">${g.expEn}<br><span style="color:var(--muted)">📌 ${g.expZh}</span></div>
+      </div>`).join('');
+    document.getElementById('grammar-section').style.display = 'block';
+  }
+
   document.getElementById('vocab-grid').innerHTML = d.vocab.map(v => `
     <div class="vocab-item">
       <div class="vocab-word">${v.word}</div>
