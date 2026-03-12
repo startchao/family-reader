@@ -1,1 +1,41 @@
+name: Family Daily Articles
 
+on:
+  # 每天台灣時間早上 06:00（UTC 前一天 22:00）自動執行
+  schedule:
+    - cron: "0 22 * * *"
+
+  # 可從 GitHub Actions 頁面手動觸發
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Generate today's articles for all family members
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          OUTPUT_DIR: docs
+        run: python scripts/generate_daily.py
+
+      - name: Commit and push generated articles
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/
+          git diff --cached --quiet || git commit -m "📚 $(date +'%Y-%m-%d') 每日文章 [自動生成]"
+          git push
