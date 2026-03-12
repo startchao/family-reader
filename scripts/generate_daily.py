@@ -14,8 +14,8 @@ import sys
 import time
 
 # ── Config ────────────────────────────────────────────────────────────────────
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
-GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
+GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
 OUTPUT_DIR = os.environ.get("OUTPUT_DIR", "docs")
 TODAY = datetime.date.today().isoformat()
 
@@ -181,26 +181,28 @@ Today's date: {TODAY}. All Chinese must be Traditional Chinese (正體中文). M
 
 # ── Gemini API Call ────────────────────────────────────────────────────────────
 def call_gemini(prompt: str, max_retries: int = 5) -> str:
-    if not GEMINI_API_KEY:
-        raise ValueError("GEMINI_API_KEY not set")
+    if not GROQ_API_KEY:
+        raise ValueError("GROQ_API_KEY not set")
 
     payload = json.dumps({
-        "contents": [{"role": "user", "parts": [{"text": prompt}]}],
-        "generationConfig": {"maxOutputTokens": 4096, "temperature": 0.85}
+        "model": "llama-3.3-70b-versatile",
+        "messages": [{"role": "user", "content": prompt}],
+        "max_tokens": 4096,
+        "temperature": 0.85
     }).encode("utf-8")
 
     delay = 30  # initial backoff in seconds for 429 errors
     for attempt in range(max_retries):
         req = urllib.request.Request(
-            f"{GEMINI_URL}?key={GEMINI_API_KEY}",
+            GROQ_URL,
             data=payload,
-            headers={"Content-Type": "application/json"},
+            headers={"Content-Type": "application/json", "Authorization": f"Bearer {GROQ_API_KEY}"},
             method="POST"
         )
         try:
             with urllib.request.urlopen(req, timeout=60) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
-                return data["candidates"][0]["content"]["parts"][0]["text"]
+                return data["choices"][0]["message"]["content"]
         except urllib.error.HTTPError as e:
             if e.code == 429:
                 if attempt < max_retries - 1:

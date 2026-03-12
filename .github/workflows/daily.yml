@@ -28,7 +28,7 @@ jobs:
 
       - name: Generate today's articles for all family members
         env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           OUTPUT_DIR: docs
         run: python scripts/generate_daily.py
 
