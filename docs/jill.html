@@ -484,8 +484,7 @@ EXPLANATION_ZH: [Traditional Chinese explanation 2-3 sentences]
 Generate a fresh article on a different topic each time. All Chinese must be Traditional Chinese (正體中文).`
 };
 
-const GEMINI_KEY = localStorage.getItem('gemini_key') || '';
-const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent`;
+const API_URL = `https://api.groq.com/openai/v1/chat/completions`;
 
 // ── State ─────────────────────────────────────────────────────────────────
 let state = JSON.parse(localStorage.getItem(LEVEL_CONFIG.storageKey) || '{"count":0,"totalQ":0,"correctQ":0,"history":[]}');
@@ -511,9 +510,9 @@ function updateStats() {
 
 // ── API Key ───────────────────────────────────────────────────────────────
 function getApiKey() {
-  const key = localStorage.getItem('gemini_key');
+  const key = localStorage.getItem('groq_key');
   if (!key) {
-    alert('請先回到首頁設定 Gemini API Key');
+    alert('請先回到首頁設定 Groq API Key');
     window.location.href = 'index.html';
     return null;
   }
@@ -536,12 +535,14 @@ async function generateArticle() {
   quizSubmitted = false;
 
   try {
-    const res = await fetch(`${API_URL}?key=${key}`, {
+    const res = await fetch(API_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
       body: JSON.stringify({
-        contents: [{ role: 'user', parts: [{ text: LEVEL_CONFIG.prompt }] }],
-        generationConfig: { maxOutputTokens: 4096, temperature: 0.85 }
+        model: 'llama-3.3-70b-versatile',
+        messages: [{ role: 'user', content: LEVEL_CONFIG.prompt }],
+        max_tokens: 4096,
+        temperature: 0.85
       })
     });
 
@@ -551,7 +552,7 @@ async function generateArticle() {
     }
 
     const data = await res.json();
-    const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const raw = data.choices?.[0]?.message?.content || '';
     currentData = parseResponse(raw);
     renderArticle(currentData);
 

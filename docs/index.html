@@ -268,7 +268,7 @@ transition: color .12s, border-color .12s;
 
 <div class="section-title" style="margin-top:40px">
   <span class="dot" style="background:#e67e22"></span>
-  Gemini API Key 設定
+  Groq API Key 設定
 </div>
 
 <div style="
@@ -284,7 +284,7 @@ transition: color .12s, border-color .12s;
   </div>
   <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
     <input type="password" id="key-input"
-      placeholder="貼上你的 Gemini API Key"
+      placeholder="貼上你的 Groq API Key（gsk_ 開頭）"
       style="
         flex:1; min-width:200px;
         background:#f5f3ef;
@@ -310,12 +310,12 @@ transition: color .12s, border-color .12s;
   </div>
   <div style="font-size:12px; color:#aaaabc; margin-top:12px;">
     Key 只儲存在此裝置，不會上傳至伺服器。每台裝置需各設定一次。<br>
-    免費取得：<a href="https://aistudio.google.com" target="_blank" style="color:#7a7890;">aistudio.google.com</a>
+    免費取得：<a href="https://console.groq.com" target="_blank" style="color:#7a7890;">console.groq.com</a>
   </div>
 </div>
 
 <div class="footer">
-  自動文章由 GitHub Actions + Google Gemini 2.0 Flash 每日生成<br>
+  自動文章由 GitHub Actions + Groq Llama 3.3 每日生成<br>
   手動文章即時生成，不佔用每日配額以外的額度
 </div>
 
@@ -431,7 +431,7 @@ buildArchive();
 
 // ── API Key 管理 ──────────────────────────────────────────────────────────────
 function updateKeyStatus() {
-  const key = localStorage.getItem('gemini_key');
+  const key = localStorage.getItem('groq_key');
   const statusEl = document.getElementById('key-status');
   if (key) {
     const masked = key.slice(0, 8) + '••••••••••••••••' + key.slice(-4);
@@ -444,14 +444,14 @@ function updateKeyStatus() {
 function saveKey() {
   const val = document.getElementById('key-input').value.trim();
   if (!val) return;
-  localStorage.setItem('gemini_key', val);
+  localStorage.setItem('groq_key', val);
   document.getElementById('key-input').value = '';
   updateKeyStatus();
 }
 
 function clearKey() {
   if (!confirm('確定要清除 API Key 嗎？')) return;
-  localStorage.removeItem('gemini_key');
+  localStorage.removeItem('groq_key');
   updateKeyStatus();
 }
 
