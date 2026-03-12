@@ -11,11 +11,11 @@
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0f1117;
-    --card: #1a1d27;
-    --border: #2a2d3a;
-    --text: #e8e6e0;
-    --muted: #7a7890;
+    --bg: #f5f3ef;
+    --card: #ffffff;
+    --border: #e0dcd6;
+    --text: #1a1a1a;
+    --muted: #8a8a9a;
     --tony:  #c0392b;
     --angel: #7d3c98;
     --jill:  #16a085;
@@ -24,8 +24,8 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
     font-family: 'Source Serif 4', serif;
-    background: var(--bg);
-    color: var(--text);
+    background: #f5f3ef;
+    color: #1a1a1a;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -37,11 +37,11 @@
 .hero { text-align: center; margin-bottom: 40px; }
 .hero-label { font-size: 12px; text-transform: uppercase; letter-spacing: 2px; color: var(–muted); margin-bottom: 12px; }
 .hero h1 { font-family: ‘Playfair Display’, serif; font-size: clamp(28px, 6vw, 40px); margin-bottom: 10px; }
-.hero p { color: #9a98b0; font-size: 15px; }
+.hero p { color: #6a6a7a; font-size: 15px; }
 .today-badge {
 display: inline-block;
 background: var(–card);
-border: 1px solid var(–border);
+border: 1px solid #e0dcd6;
 border-radius: 20px;
 padding: 5px 18px;
 font-size: 13px;
@@ -83,11 +83,11 @@ max-width: 960px;
 
 .card {
 background: var(–card);
-border: 1px solid var(–border);
+border: 1px solid #e0dcd6;
 border-radius: 12px;
 padding: 22px 20px 18px;
 text-decoration: none;
-color: var(–text);
+color: #1a1a1a;
 transition: transform .15s, border-color .15s;
 position: relative;
 overflow: hidden;
@@ -100,7 +100,7 @@ top: 0; left: 0; right: 0;
 height: 3px;
 background: var(–c);
 }
-.card:hover { transform: translateY(-3px); border-color: #3a3d4a; }
+.card:hover { transform: translateY(-3px); border-color: #c8c4be; }
 
 .card.tony  { –c: var(–tony);  }
 .card.angel { –c: var(–angel); }
@@ -118,7 +118,7 @@ margin-bottom: 6px;
 }
 .card h2 { font-family: ‘Playfair Display’, serif; font-size: 20px; margin-bottom: 6px; }
 .card-desc { font-size: 12px; color: var(–muted); margin-bottom: 10px; line-height: 1.5; }
-.card-status { font-size: 12px; color: #9a98b0; }
+.card-status { font-size: 12px; color: #6a6a7a; }
 .card-status.ready { color: #27ae60; }
 .card-status.missing { color: #e67e22; }
 
@@ -131,7 +131,7 @@ margin-top: 10px;
 padding-top: 10px;
 border-top: 1px solid var(–border);
 }
-.card-stats strong { color: var(–text); }
+.card-stats strong { color: #1a1a1a; }
 
 /* manual card style — slightly dimmer top bar */
 .card.manual::before { opacity: .5; }
@@ -141,7 +141,7 @@ border-top: 1px solid var(–border);
 width: 100%;
 max-width: 960px;
 background: var(–card);
-border: 1px solid var(–border);
+border: 1px solid #e0dcd6;
 border-radius: 12px;
 padding: 24px;
 margin-top: 8px;
@@ -163,11 +163,11 @@ padding-bottom: 10px;
 border-bottom: 1px solid var(–border);
 }
 .archive-item:last-child { border-bottom: none; padding-bottom: 0; }
-.archive-date { color: var(–text); min-width: 100px; }
+.archive-date { color: #1a1a1a; min-width: 100px; }
 .archive-links { display: flex; gap: 8px; flex-wrap: wrap; }
 .archive-links a {
-background: var(–bg);
-border: 1px solid var(–border);
+background: #f5f3ef;
+border: 1px solid #e0dcd6;
 border-radius: 6px;
 padding: 3px 10px;
 font-size: 12px;
@@ -175,9 +175,9 @@ color: var(–muted);
 text-decoration: none;
 transition: color .12s, border-color .12s;
 }
-.archive-links a:hover { color: var(–text); border-color: #4a4d5a; }
+.archive-links a:hover { color: #1a1a1a; border-color: #b0aca6; }
 
-.footer { margin-top: 40px; color: #3a3a50; font-size: 12px; text-align: center; line-height: 1.8; }
+.footer { margin-top: 40px; color: #aaaabc; font-size: 12px; text-align: center; line-height: 1.8; }
 </style>
 
 </head>
@@ -273,8 +273,8 @@ transition: color .12s, border-color .12s;
 
 <div style="
   width:100%; max-width:960px;
-  background:#1a1d27;
-  border:1px solid #2a2d3a;
+  background:#ffffff;
+  border:1px solid #e0dcd6;
   border-radius:12px;
   padding:24px;
   margin-bottom:8px;
@@ -287,11 +287,11 @@ transition: color .12s, border-color .12s;
       placeholder="貼上你的 Gemini API Key"
       style="
         flex:1; min-width:200px;
-        background:#0f1117;
-        border:1px solid #2a2d3a;
+        background:#f5f3ef;
+        border:1px solid #e0dcd6;
         border-radius:8px;
         padding:11px 14px;
-        color:#e8e6e0;
+        color:#1a1a1a;
         font-size:14px;
         font-family: monospace;
       "
@@ -303,12 +303,12 @@ transition: color .12s, border-color .12s;
     ">儲存 Key</button>
     <button onclick="clearKey()" style="
       background:transparent; color:#7a7890;
-      border:1px solid #2a2d3a;
+      border:1px solid #e0dcd6;
       padding:11px 16px; border-radius:8px;
       font-size:14px; cursor:pointer;
     ">清除</button>
   </div>
-  <div style="font-size:12px; color:#3a3a50; margin-top:12px;">
+  <div style="font-size:12px; color:#aaaabc; margin-top:12px;">
     Key 只儲存在此裝置，不會上傳至伺服器。每台裝置需各設定一次。<br>
     免費取得：<a href="https://aistudio.google.com" target="_blank" style="color:#7a7890;">aistudio.google.com</a>
   </div>
@@ -435,7 +435,7 @@ function updateKeyStatus() {
   const statusEl = document.getElementById('key-status');
   if (key) {
     const masked = key.slice(0, 8) + '••••••••••••••••' + key.slice(-4);
-    statusEl.innerHTML = `✅ <span style="color:#27ae60">API Key 已設定</span>　<span style="font-family:monospace;font-size:12px;color:#3a3a50">${masked}</span>`;
+    statusEl.innerHTML = `✅ <span style="color:#27ae60">API Key 已設定</span>　<span style="font-family:monospace;font-size:12px;color:#aaaabc">${masked}</span>`;
   } else {
     statusEl.innerHTML = `⚠️ <span style="color:#e67e22">尚未設定 API Key — 手動生成功能無法使用</span>`;
   }
