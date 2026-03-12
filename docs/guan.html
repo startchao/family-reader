@@ -39,6 +39,8 @@
     box-shadow: 0 3px 14px rgba(41,128,185,.3);
   }
   .header-left { display: flex; align-items: center; gap: 12px; }
+  .home-btn { color: #fff; font-size: 20px; text-decoration: none; opacity: 0.75; transition: opacity .15s; line-height: 1; }
+  .home-btn:hover { opacity: 1; }
   .level-badge {
     background: #fff;
     color: var(--accent);
@@ -207,6 +209,7 @@ header { padding: 12px 14px; }
 
 <header>
   <div class="header-left">
+    <a href="index.html" class="home-btn" title="返回首頁">🏠</a>
     <span class="level-badge">A2–B1</span>
     <h1>Guan's English Reader</h1>
   </div>
@@ -569,9 +572,14 @@ function downloadPDF() {
   const date = new Date().toLocaleDateString('zh-TW');
   const html = `<!DOCTYPE html><html><head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>${d.title}</title>
     <style>
-      body { font-family: Georgia, serif; max-width: 740px; margin: 40px auto; color: #222; line-height: 1.85; font-size: 16px; }
+      body { font-family: Georgia, serif; max-width: 740px; margin: 40px auto; color: #222; line-height: 1.85; font-size: 16px; padding: 0 16px; }
+      .btn-bar { display:flex; gap:10px; margin-bottom:28px; flex-wrap:wrap; }
+      .btn { padding:10px 20px; border:none; border-radius:6px; cursor:pointer; font-size:15px; }
+      .btn-print { background:#1a1209; color:#fff; }
+      .btn-close { background:#eee; color:#333; }
       h1 { font-size: 26px; margin-bottom: 6px; }
       .meta { color: #888; font-size: 13px; margin-bottom: 28px; }
       h2 { font-size: 15px; border-bottom: 1px solid #ddd; padding-bottom: 4px; margin-top: 32px; color: #333; }
@@ -580,9 +588,13 @@ function downloadPDF() {
       b { color: #111; }
       .zh { color: #555; font-size: 14px; }
       i { color: #777; font-size: 14px; }
-      @media print { body { margin: 20px; } }
+      @media print { .btn-bar { display:none; } body { margin: 20px; } }
     </style>
   </head><body>
+    <div class="btn-bar">
+      <button class="btn btn-print" onclick="window.print()">🖨 列印 / 存 PDF</button>
+      <button class="btn btn-close" onclick="window.close()">✕ 關閉此頁</button>
+    </div>
     <h1>${d.title}</h1>
     <div class="meta">Level: A2–B1 ｜ ${date}</div>
     <h2>📰 Article</h2>
@@ -597,8 +609,7 @@ function downloadPDF() {
   const w = window.open('', '_blank');
   w.document.write(html);
   w.document.close();
-  setTimeout(() => w.print(), 400);
-  showToast('📄 開啟列印視窗，請選擇「另存 PDF」');
+  showToast('📄 已開啟 PDF 預覽，請點「列印/存PDF」');
 }
 
 function showToast(msg) {
