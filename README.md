@@ -32,6 +32,9 @@ family-reader/
 ```
 
 ## 設定說明
-1. Settings → Secrets → 加入 `GEMINI_API_KEY`
+1. Settings → Secrets → 加入 `GROQ_API_KEY`（Groq Console 取得，格式 `gsk_...`）
 2. Settings → Pages → Branch: main，資料夾: `/docs`
 3. Actions → 手動執行一次測試
+
+## 自動排程
+每天 UTC 22:00（台灣時間 06:00）自動執行，使用 Groq Llama 3.3 70B 生成文章並 commit 至 main 分支。

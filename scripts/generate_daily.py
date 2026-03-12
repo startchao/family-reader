@@ -179,10 +179,21 @@ Today's date: {TODAY}. All Chinese must be Traditional Chinese (正體中文). M
     }
 ]
 
+# ── Helpers ────────────────────────────────────────────────────────────────────
+def html_escape_attr(text: str) -> str:
+    """Escape text for use inside HTML attributes."""
+    return (text.replace('&', '&amp;')
+                .replace('<', '&lt;')
+                .replace('>', '&gt;')
+                .replace('"', '&quot;')
+                .replace("'", '&#39;'))
+
 # ── Gemini API Call ────────────────────────────────────────────────────────────
 def call_gemini(prompt: str, max_retries: int = 5) -> str:
     if not GROQ_API_KEY:
         raise ValueError("GROQ_API_KEY not set")
+
+    print(f"  🔑 Using key: {GROQ_API_KEY[:8]}... (len={len(GROQ_API_KEY)})", file=sys.stderr)
 
     payload = json.dumps({
         "model": "llama-3.3-70b-versatile",
@@ -212,6 +223,11 @@ def call_gemini(prompt: str, max_retries: int = 5) -> str:
                 else:
                     raise
             else:
+                try:
+                    err_body = e.read().decode("utf-8")
+                    print(f"  ❌ HTTP {e.code} from Groq: {err_body}", file=sys.stderr)
+                except Exception:
+                    pass
                 raise
 
 # ── Parse Response ─────────────────────────────────────────────────────────────
@@ -295,8 +311,8 @@ def generate_member_html(member: dict, data: dict) -> str:
             </label>"""
         quiz_html += f"""
         <div class="quiz-item" id="quiz-{i}" data-answer="{q['answer']}"
-             data-exp-en="{q['exp_en'].replace('"','&quot;')}"
-             data-exp-zh="{q['exp_zh'].replace('"','&quot;')}">
+             data-exp-en="{html_escape_attr(q['exp_en'])}"
+             data-exp-zh="{html_escape_attr(q['exp_zh'])}">
           <div class="quiz-q">Q{i}. {q['q']}</div>
           <div class="quiz-opts">{opts_html}</div>
           <div class="quiz-exp" id="exp-{i}" style="display:none"></div>
@@ -770,8 +786,8 @@ def main():
             raw = call_gemini(member["prompt"])
             data = parse_response(raw)
 
-            if not data["title"] or not data["article"]:
-                raise ValueError("Incomplete response from Groq")
+            if not all([data["title"], data["article"], data["vocab"], data["quiz"]]):
+                raise ValueError("Incomplete response from Groq (missing title/article/vocab/quiz)")
 
             html = generate_member_html(member, data)
             out_path = os.path.join(OUTPUT_DIR, f"{mid}_{TODAY}.html")
