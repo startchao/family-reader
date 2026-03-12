@@ -35,17 +35,17 @@
 
 /* ── Hero ── */
 .hero { text-align: center; margin-bottom: 40px; }
-.hero-label { font-size: 12px; text-transform: uppercase; letter-spacing: 2px; color: var(–muted); margin-bottom: 12px; }
+.hero-label { font-size: 12px; text-transform: uppercase; letter-spacing: 2px; color: var(--muted); margin-bottom: 12px; }
 .hero h1 { font-family: ‘Playfair Display’, serif; font-size: clamp(28px, 6vw, 40px); margin-bottom: 10px; }
 .hero p { color: #6a6a7a; font-size: 15px; }
 .today-badge {
 display: inline-block;
-background: var(–card);
+background: var(--card);
 border: 1px solid #e0dcd6;
 border-radius: 20px;
 padding: 5px 18px;
 font-size: 13px;
-color: var(–muted);
+color: var(--muted);
 margin-top: 12px;
 }
 
@@ -56,10 +56,10 @@ max-width: 960px;
 font-size: 12px;
 text-transform: uppercase;
 letter-spacing: 1.5px;
-color: var(–muted);
+color: var(--muted);
 margin: 32px 0 16px;
 padding-bottom: 10px;
-border-bottom: 1px solid var(–border);
+border-bottom: 1px solid var(--border);
 display: flex;
 align-items: center;
 gap: 8px;
@@ -70,7 +70,7 @@ border-radius: 50%;
 display: inline-block;
 }
 .dot-auto  { background: #27ae60; box-shadow: 0 0 6px #27ae60; }
-.dot-manual { background: var(–muted); }
+.dot-manual { background: var(--muted); }
 
 /* ── Cards grid ── */
 .cards {
@@ -82,7 +82,7 @@ max-width: 960px;
 }
 
 .card {
-background: var(–card);
+background: var(--card);
 border: 1px solid #e0dcd6;
 border-radius: 12px;
 padding: 22px 20px 18px;
@@ -98,26 +98,26 @@ content: ‘’;
 position: absolute;
 top: 0; left: 0; right: 0;
 height: 3px;
-background: var(–c);
+background: var(--c);
 }
 .card:hover { transform: translateY(-3px); border-color: #c8c4be; }
 
-.card.tony  { –c: var(–tony);  }
-.card.angel { –c: var(–angel); }
-.card.jill  { –c: var(–jill);  }
-.card.guan  { –c: var(–guan);  }
+.card.tony  { --c: var(--tony);  }
+.card.angel { --c: var(--angel); }
+.card.jill  { --c: var(--jill);  }
+.card.guan  { --c: var(--guan);  }
 
 .card-icon { font-size: 28px; margin-bottom: 8px; }
 .card-badge {
 font-size: 11px;
 text-transform: uppercase;
 letter-spacing: .7px;
-color: var(–c);
+color: var(--c);
 font-weight: 600;
 margin-bottom: 6px;
 }
 .card h2 { font-family: ‘Playfair Display’, serif; font-size: 20px; margin-bottom: 6px; }
-.card-desc { font-size: 12px; color: var(–muted); margin-bottom: 10px; line-height: 1.5; }
+.card-desc { font-size: 12px; color: var(--muted); margin-bottom: 10px; line-height: 1.5; }
 .card-status { font-size: 12px; color: #6a6a7a; }
 .card-status.ready { color: #27ae60; }
 .card-status.missing { color: #e67e22; }
@@ -126,10 +126,10 @@ margin-bottom: 6px;
 display: flex;
 gap: 12px;
 font-size: 12px;
-color: var(–muted);
+color: var(--muted);
 margin-top: 10px;
 padding-top: 10px;
-border-top: 1px solid var(–border);
+border-top: 1px solid var(--border);
 }
 .card-stats strong { color: #1a1a1a; }
 
@@ -140,7 +140,7 @@ border-top: 1px solid var(–border);
 .archive {
 width: 100%;
 max-width: 960px;
-background: var(–card);
+background: var(--card);
 border: 1px solid #e0dcd6;
 border-radius: 12px;
 padding: 24px;
@@ -149,7 +149,7 @@ margin-top: 8px;
 .archive h3 {
 font-family: ‘Playfair Display’, serif;
 font-size: 16px;
-color: var(–muted);
+color: var(--muted);
 margin-bottom: 16px;
 }
 .archive-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
@@ -158,9 +158,9 @@ display: flex;
 align-items: center;
 gap: 12px;
 font-size: 13px;
-color: var(–muted);
+color: var(--muted);
 padding-bottom: 10px;
-border-bottom: 1px solid var(–border);
+border-bottom: 1px solid var(--border);
 }
 .archive-item:last-child { border-bottom: none; padding-bottom: 0; }
 .archive-date { color: #1a1a1a; min-width: 100px; }
@@ -171,7 +171,7 @@ border: 1px solid #e0dcd6;
 border-radius: 6px;
 padding: 3px 10px;
 font-size: 12px;
-color: var(–muted);
+color: var(--muted);
 text-decoration: none;
 transition: color .12s, border-color .12s;
 }
