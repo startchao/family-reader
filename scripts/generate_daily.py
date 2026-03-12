@@ -184,6 +184,8 @@ def call_gemini(prompt: str, max_retries: int = 5) -> str:
     if not GROQ_API_KEY:
         raise ValueError("GROQ_API_KEY not set")
 
+    print(f"  🔑 Using key: {GROQ_API_KEY[:8]}... (len={len(GROQ_API_KEY)})", file=sys.stderr)
+
     payload = json.dumps({
         "model": "llama-3.3-70b-versatile",
         "messages": [{"role": "user", "content": prompt}],
@@ -212,6 +214,11 @@ def call_gemini(prompt: str, max_retries: int = 5) -> str:
                 else:
                     raise
             else:
+                try:
+                    err_body = e.read().decode("utf-8")
+                    print(f"  ❌ HTTP {e.code} from Groq: {err_body}", file=sys.stderr)
+                except Exception:
+                    pass
                 raise
 
 # ── Parse Response ─────────────────────────────────────────────────────────────
