@@ -226,7 +226,7 @@ header { padding: 12px 14px; }
   <div class="controls">
     <button class="btn-primary" id="btn-generate" onclick="generateArticle()">✨ 產生新文章</button>
     <button class="btn-secondary" id="btn-toggle-zh" onclick="toggleTranslation()" disabled>🈶 看中文翻譯</button>
-    <button class="btn-secondary" id="btn-download" onclick="downloadMD()" disabled>⬇ 下載</button>
+    <button class="btn-secondary" id="btn-download" onclick="downloadPDF()" disabled>⬇ 下載 PDF</button>
   </div>
 
   <div class="loading-wrap" id="loading">
@@ -264,9 +264,9 @@ header { padding: 12px 14px; }
   <div id="art-analysis" style="color:var(--ink); line-height:1.9;"></div>
 </div>
 
-<!-- Grammar Analysis -->
+<!-- Phrases Section -->
 <div class="section" id="grammar-section" style="display:none">
-  <div class="section-label">📐 文法解析</div>
+  <div class="section-label">💬 重要片語</div>
   <div id="grammar-list"></div>
 </div>
 
@@ -332,9 +332,10 @@ OUTPUT FORMAT (use these exact markers):
 [Full Traditional Chinese translation, simple and natural for a 12-year-old]
 ===ANALYSIS===
 [文章解析：用1-2句簡單的繁體中文說明這篇文章在講什麼，用國小生能理解的語言]
-===GRAMMAR===
-ITEM1: [Grammar point name]|[Short quote from article]|[Simple English explanation]|[簡單中文說明，適合12歲學生]
-ITEM2: [Grammar point name]|[Short quote]|[Simple English explanation]|[簡單中文說明]
+===PHRASES===
+ITEM1: [short phrase or expression from article]|[中文意思]|[simple example sentence]
+ITEM2: [short phrase or expression]|[中文意思]|[simple example sentence]
+ITEM3: [short phrase or expression]|[中文意思]|[simple example sentence]
 ===VOCAB===
 [Exactly 6 vocabulary items (simple words OR short phrases from the article), one per line: WORD_OR_PHRASE|/IPA/|Simple English meaning|中文意思|Short example sentence]
 ===QUIZ===
@@ -365,6 +366,12 @@ let userAnswers = {};
 let quizSubmitted = false;
 
 updateStats();
+(function loadSaved() {
+  const saved = localStorage.getItem(LEVEL_CONFIG.storageKey + '_current');
+  if (saved) {
+    try { currentData = JSON.parse(saved); renderArticle(currentData); } catch(e) {}
+  }
+})();
 
 function saveState() { localStorage.setItem(LEVEL_CONFIG.storageKey, JSON.stringify(state)); }
 
@@ -415,6 +422,7 @@ async function generateArticle() {
     const raw = data.choices?.[0]?.message?.content || '';
     currentData = parseResponse(raw);
     renderArticle(currentData);
+    localStorage.setItem(LEVEL_CONFIG.storageKey + '_current', JSON.stringify(currentData));
     state.count++;
     saveState(); updateStats();
   } catch (e) {
@@ -431,11 +439,12 @@ function parseResponse(raw) {
   const get = (tag) => { const m = raw.match(new RegExp(`===${tag}===\\s*([\\s\\S]*?)(?:===|$)`)); return m ? m[1].trim() : ''; };
   const analysis = get('ANALYSIS');
 
-  const grammarRaw = get('GRAMMAR').split('\n').filter(l => l.includes('|'));
-  const grammar = grammarRaw.map(line => {
-    const [name, quote, expEn, expZh] = line.split('|');
-    return { name: name?.trim(), quote: quote?.trim(), expEn: expEn?.trim(), expZh: expZh?.trim() };
-  }).filter(v => v.name);
+  const phrasesRaw = get('PHRASES').split('\n').filter(l => l.startsWith('ITEM') && l.includes('|'));
+  const phrases = phrasesRaw.map(line => {
+    const content = line.replace(/^ITEM\d+:\s*/, '');
+    const [phrase, zh, example] = content.split('|');
+    return { phrase: phrase?.trim(), zh: zh?.trim(), example: example?.trim() };
+  }).filter(v => v.phrase);
 
   const vocab = get('VOCAB').split('\n').filter(l => l.includes('|')).map(line => {
     const [word, ipa, def, zh, ex] = line.split('|');
@@ -453,7 +462,7 @@ function parseResponse(raw) {
     });
     if (q.text && q.answer) questions.push(q);
   });
-  return { title: get('TITLE'), body: get('ARTICLE'), zh: get('TRANSLATION'), analysis, grammar, vocab, questions };
+  return { title: get('TITLE'), body: get('ARTICLE'), zh: get('TRANSLATION'), analysis, phrases, vocab, questions };
 }
 
 function renderArticle(d) {
@@ -470,13 +479,13 @@ function renderArticle(d) {
     document.getElementById('analysis-section').style.display = 'block';
   }
 
-  // Grammar
-  if (d.grammar?.length) {
-    document.getElementById('grammar-list').innerHTML = d.grammar.map(g => `
+  // Phrases
+  if (d.phrases?.length) {
+    document.getElementById('grammar-list').innerHTML = d.phrases.map(p => `
       <div class="grammar-item">
-        <div class="grammar-name">${g.name}</div>
-        <div class="grammar-quote">"${g.quote}"</div>
-        <div class="grammar-exp">${g.expEn}<br><span style="color:var(--muted)">📌 ${g.expZh}</span></div>
+        <div class="grammar-name">${p.phrase}</div>
+        <div class="grammar-quote">📌 ${p.zh}</div>
+        <div class="grammar-exp" style="font-style:italic;color:#666">✦ ${p.example || ''}</div>
       </div>`).join('');
     document.getElementById('grammar-section').style.display = 'block';
   }
@@ -554,23 +563,42 @@ function toggleTranslation() {
   btn.textContent = wrap.classList.toggle('visible') ? '🈚 隱藏翻譯' : '🈶 看中文翻譯';
 }
 
-function downloadMD() {
+function downloadPDF() {
   if (!currentData) return;
   const d = currentData;
-  let md = `# ${d.title}\n\n> Level: A2-B1 | Guan's English Reader | ${new Date().toLocaleDateString('zh-TW')}\n\n## Article\n\n${d.body}\n\n## Translation\n\n${d.zh}\n\n## Vocabulary\n\n`;
-  d.vocab.forEach(v => { md += `**${v.word}** ${v.ipa} — ${v.def} | ${v.zh}\n例：${v.ex}\n\n`; });
-  md += `## Quiz\n\n`;
-  d.questions.forEach((q, i) => {
-    md += `**Q${i+1}.** ${q.text}\n`;
-    Object.entries(q.options).forEach(([k, v]) => { md += `${k}) ${v}\n`; });
-    md += `\nAnswer: ${q.answer}\n${q.expEn}\n${q.expZh}\n\n`;
-  });
-  const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `guan-reader-${new Date().toISOString().slice(0,10)}.md`;
-  a.click();
-  showToast('✅ 下載完成！');
+  const date = new Date().toLocaleDateString('zh-TW');
+  const html = `<!DOCTYPE html><html><head>
+    <meta charset="UTF-8">
+    <title>${d.title}</title>
+    <style>
+      body { font-family: Georgia, serif; max-width: 740px; margin: 40px auto; color: #222; line-height: 1.85; font-size: 16px; }
+      h1 { font-size: 26px; margin-bottom: 6px; }
+      .meta { color: #888; font-size: 13px; margin-bottom: 28px; }
+      h2 { font-size: 15px; border-bottom: 1px solid #ddd; padding-bottom: 4px; margin-top: 32px; color: #333; }
+      p { margin-bottom: 1em; }
+      .vocab-item { margin-bottom: 14px; }
+      b { color: #111; }
+      .zh { color: #555; font-size: 14px; }
+      i { color: #777; font-size: 14px; }
+      @media print { body { margin: 20px; } }
+    </style>
+  </head><body>
+    <h1>${d.title}</h1>
+    <div class="meta">Level: A2–B1 ｜ ${date}</div>
+    <h2>📰 Article</h2>
+    ${d.body.split('\n\n').filter(Boolean).map(p => `<p>${p}</p>`).join('')}
+    <h2>🈶 中文翻譯</h2>
+    ${d.zh.split('\n\n').filter(Boolean).map(p => `<p>${p}</p>`).join('')}
+    <h2>📚 Vocabulary</h2>
+    ${d.vocab.map(v => `<div class="vocab-item"><b>${v.word}</b> ${v.ipa||''} — ${v.def||''}<br><span class="zh">📌 ${v.zh||''}</span>${v.ex ? `<br><i>✦ ${v.ex}</i>` : ''}</div>`).join('')}
+    <h2>✏️ Quiz</h2>
+    ${d.questions.map((q,i) => `<p><b>Q${i+1}.</b> ${q.text}<br>${Object.entries(q.options).map(([k,v])=>`${k}) ${v}`).join(' ｜ ')}<br>✅ Answer: ${q.answer} — ${q.expEn}</p>`).join('')}
+  </body></html>`;
+  const w = window.open('', '_blank');
+  w.document.write(html);
+  w.document.close();
+  setTimeout(() => w.print(), 400);
+  showToast('📄 開啟列印視窗，請選擇「另存 PDF」');
 }
 
 function showToast(msg) {

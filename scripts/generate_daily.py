@@ -744,7 +744,7 @@ def generate_index_html(members: list, results: dict) -> str:
   <ul>{archive_items}</ul>
 </div>
 
-<div class="footer">由 Google Gemini 2.0 Flash 每日自動生成 · GitHub Actions</div>
+<div class="footer">由 Groq Llama 3.3 70B 每日自動生成 · GitHub Actions</div>
 
 <script>
 {stats_js}
@@ -771,7 +771,7 @@ def main():
             data = parse_response(raw)
 
             if not data["title"] or not data["article"]:
-                raise ValueError("Incomplete response from Gemini")
+                raise ValueError("Incomplete response from Groq")
 
             html = generate_member_html(member, data)
             out_path = os.path.join(OUTPUT_DIR, f"{mid}_{TODAY}.html")
