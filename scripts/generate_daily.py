@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-“””
+"""
 Family Daily Reader — Daily Article Generator
 每天自動為四位家人生成不同程度的英文閱讀文章，並產生網頁。
-“””
+"""
 
 import os
 import json
@@ -13,26 +13,23 @@ import re
 import sys
 
 # ── Config ────────────────────────────────────────────────────────────────────
-
-GEMINI_API_KEY = os.environ.get(“GEMINI_API_KEY”, “”)
-GEMINI_URL = “https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent”
-OUTPUT_DIR = os.environ.get(“OUTPUT_DIR”, “docs”)
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
+GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
+OUTPUT_DIR = os.environ.get("OUTPUT_DIR", "docs")
 TODAY = datetime.date.today().isoformat()
 
 # ── Member Profiles ────────────────────────────────────────────────────────────
-
 MEMBERS = [
-{
-“id”: “tony”,
-“name”: “Tony”,
-“icon”: “📰”,
-“color”: “#c0392b”,
-“badge”: “B2–C1 · FLPT”,
-“storage_key”: “daily_tony”,
-“prompt”: f””“You are an expert FLPT tutor. Generate a B2-C1 level English reading article for a Taiwanese military officer targeting FLPT 220-240+ score.
+    {
+        "id": "tony",
+        "name": "Tony",
+        "icon": "📰",
+        "color": "#c0392b",
+        "badge": "B2–C1 · FLPT",
+        "storage_key": "daily_tony",
+        "prompt": f"""You are an expert FLPT tutor. Generate a B2-C1 level English reading article for a Taiwanese military officer targeting FLPT 220-240+ score.
 
 REQUIREMENTS:
-
 - Length: 350–420 words, analytical essay style
 - Topics: rotate among geopolitics, military technology, US-China-Taiwan relations, cybersecurity, international security, global economics
 - Style: The Economist / Foreign Affairs — analytical, precise, sophisticated
@@ -54,25 +51,24 @@ A) B) C) D)
 ANSWER: [letter]
 EXPLANATION_EN: [2-3 sentences]
 EXPLANATION_ZH: [2-3 sentences in Traditional Chinese]
-Q2: [Author’s purpose or implication question]
+Q2: [Author's purpose or implication question]
 A) B) C) D)
 ANSWER: [letter]
 EXPLANATION_EN: [2-3 sentences]
 EXPLANATION_ZH: [2-3 sentences in Traditional Chinese]
 
-Today’s date: {TODAY}. All Chinese must be Traditional Chinese (正體中文).”””
-},
-{
-“id”: “angel”,
-“name”: “Angel”,
-“icon”: “🌸”,
-“color”: “#7d3c98”,
-“badge”: “B2–C1”,
-“storage_key”: “daily_angel”,
-“prompt”: f””“You are a thoughtful English teacher. Generate a B2-C1 level English reading article for an adult female reader who enjoys a wide variety of topics.
+Today's date: {TODAY}. All Chinese must be Traditional Chinese (正體中文)."""
+    },
+    {
+        "id": "angel",
+        "name": "Angel",
+        "icon": "🌸",
+        "color": "#7d3c98",
+        "badge": "B2–C1",
+        "storage_key": "daily_angel",
+        "prompt": f"""You are a thoughtful English teacher. Generate a B2-C1 level English reading article for an adult female reader who enjoys a wide variety of topics.
 
 REQUIREMENTS:
-
 - Length: 280–350 words, engaging magazine style
 - Topics: rotate broadly — lifestyle, health & wellness, travel & culture, food, parenting & family, design & arts, psychology, social trends, technology in daily life, environmental issues, human interest stories
 - Style: Intelligent general-interest magazine (The Atlantic, BBC Culture, Vogue International feature)
@@ -100,19 +96,18 @@ ANSWER: [letter]
 EXPLANATION_EN: [2 sentences]
 EXPLANATION_ZH: [2 sentences in Traditional Chinese]
 
-Today’s date: {TODAY}. All Chinese must be Traditional Chinese (正體中文). Never repeat the same topic area as yesterday.”””
-},
-{
-“id”: “jill”,
-“name”: “Jill”,
-“icon”: “📖”,
-“color”: “#16a085”,
-“badge”: “B2 · 國高中”,
-“storage_key”: “daily_jill”,
-“prompt”: f””“You are an engaging English teacher for Taiwanese junior/senior high school students. Generate a B2 level English reading article.
+Today's date: {TODAY}. All Chinese must be Traditional Chinese (正體中文). Never repeat the same topic area as yesterday."""
+    },
+    {
+        "id": "jill",
+        "name": "Jill",
+        "icon": "📖",
+        "color": "#16a085",
+        "badge": "B2 · 國高中",
+        "storage_key": "daily_jill",
+        "prompt": f"""You are an engaging English teacher for Taiwanese junior/senior high school students. Generate a B2 level English reading article.
 
 REQUIREMENTS:
-
 - Length: 220–280 words
 - Topics: rotate among environment & nature, technology & social media, cross-cultural understanding, youth issues, sports & achievement, science discoveries, current events (simplified)
 - Style: Clear, engaging, educational — like a good school magazine article
@@ -140,22 +135,21 @@ ANSWER: [letter]
 EXPLANATION_EN: [1-2 sentences]
 EXPLANATION_ZH: [1-2 sentences in Traditional Chinese]
 
-Today’s date: {TODAY}. All Chinese must be Traditional Chinese (正體中文).”””
-},
-{
-“id”: “guan”,
-“name”: “Guan”,
-“icon”: “🚀”,
-“color”: “#2980b9”,
-“badge”: “A2–B1 · 國小高年級—國中”,
-“storage_key”: “daily_guan”,
-“prompt”: f””“You are a fun and encouraging English teacher for Taiwanese upper elementary to junior high school students (ages 11-14, A2-B1 level). Generate an engaging English reading article.
+Today's date: {TODAY}. All Chinese must be Traditional Chinese (正體中文)."""
+    },
+    {
+        "id": "guan",
+        "name": "Guan",
+        "icon": "🚀",
+        "color": "#2980b9",
+        "badge": "A2–B1 · 國小高年級—國中",
+        "storage_key": "daily_guan",
+        "prompt": f"""You are a fun and encouraging English teacher for Taiwanese upper elementary to junior high school students (ages 11-14, A2-B1 level). Generate an engaging English reading article.
 
 REQUIREMENTS:
-
 - Length: 150–200 words
 - Topics: rotate among animals & nature, sports & games, food & cooking, science experiments & discoveries, adventures & travel, school life, technology kids use, interesting facts about the world
-- Style: Fun, clear, encouraging — like a great children’s magazine (National Geographic Kids level)
+- Style: Fun, clear, encouraging — like a great children's magazine (National Geographic Kids level)
 - Vocabulary: A2-B1 CEFR, simple and clear, 6 vocabulary items with simple definitions
 - Sentences: mostly short to medium, active voice, concrete and vivid
 
@@ -180,133 +174,123 @@ ANSWER: [letter]
 EXPLANATION_EN: [1 sentence]
 EXPLANATION_ZH: [1 sentence in Traditional Chinese]
 
-Today’s date: {TODAY}. All Chinese must be Traditional Chinese (正體中文). Make it fun and encouraging!”””
-}
+Today's date: {TODAY}. All Chinese must be Traditional Chinese (正體中文). Make it fun and encouraging!"""
+    }
 ]
 
 # ── Gemini API Call ────────────────────────────────────────────────────────────
-
 def call_gemini(prompt: str) -> str:
-if not GEMINI_API_KEY:
-raise ValueError(“GEMINI_API_KEY not set”)
+    if not GEMINI_API_KEY:
+        raise ValueError("GEMINI_API_KEY not set")
 
-```
-payload = json.dumps({
-    "contents": [{"role": "user", "parts": [{"text": prompt}]}],
-    "generationConfig": {"maxOutputTokens": 4096, "temperature": 0.85}
-}).encode("utf-8")
+    payload = json.dumps({
+        "contents": [{"role": "user", "parts": [{"text": prompt}]}],
+        "generationConfig": {"maxOutputTokens": 4096, "temperature": 0.85}
+    }).encode("utf-8")
 
-req = urllib.request.Request(
-    f"{GEMINI_URL}?key={GEMINI_API_KEY}",
-    data=payload,
-    headers={"Content-Type": "application/json"},
-    method="POST"
-)
+    req = urllib.request.Request(
+        f"{GEMINI_URL}?key={GEMINI_API_KEY}",
+        data=payload,
+        headers={"Content-Type": "application/json"},
+        method="POST"
+    )
 
-with urllib.request.urlopen(req, timeout=60) as resp:
-    data = json.loads(resp.read().decode("utf-8"))
-    return data["candidates"][0]["content"]["parts"][0]["text"]
-```
+    with urllib.request.urlopen(req, timeout=60) as resp:
+        data = json.loads(resp.read().decode("utf-8"))
+        return data["candidates"][0]["content"]["parts"][0]["text"]
 
 # ── Parse Response ─────────────────────────────────────────────────────────────
-
 def parse_response(raw: str) -> dict:
-def extract(tag: str) -> str:
-pattern = rf”==={tag}===(.*?)(?====\w+===|$)”
-m = re.search(pattern, raw, re.DOTALL)
-return m.group(1).strip() if m else “”
+    def extract(tag: str) -> str:
+        pattern = rf"==={tag}===(.*?)(?====\w+===|$)"
+        m = re.search(pattern, raw, re.DOTALL)
+        return m.group(1).strip() if m else ""
 
-```
-title       = extract("TITLE")
-article     = extract("ARTICLE")
-translation = extract("TRANSLATION")
-vocab_raw   = extract("VOCAB")
-quiz_raw    = extract("QUIZ")
+    title       = extract("TITLE")
+    article     = extract("ARTICLE")
+    translation = extract("TRANSLATION")
+    vocab_raw   = extract("VOCAB")
+    quiz_raw    = extract("QUIZ")
 
-# Parse vocab
-vocab_items = []
-for line in vocab_raw.strip().split("\n"):
-    parts = line.strip().split("|")
-    if len(parts) >= 5:
-        vocab_items.append({
-            "word": parts[0].strip(),
-            "ipa":  parts[1].strip(),
-            "en":   parts[2].strip(),
-            "zh":   parts[3].strip(),
-            "ex":   parts[4].strip()
-        })
+    # Parse vocab
+    vocab_items = []
+    for line in vocab_raw.strip().split("\n"):
+        parts = line.strip().split("|")
+        if len(parts) >= 5:
+            vocab_items.append({
+                "word": parts[0].strip(),
+                "ipa":  parts[1].strip(),
+                "en":   parts[2].strip(),
+                "zh":   parts[3].strip(),
+                "ex":   parts[4].strip()
+            })
 
-# Parse quiz
-quiz_items = []
-questions = re.split(r'Q\d+:', quiz_raw)[1:]
-for q_block in questions:
-    lines = [l.strip() for l in q_block.strip().split("\n") if l.strip()]
-    if not lines:
-        continue
-    q_text = lines[0]
-    opts, answer, exp_en, exp_zh = {}, "", "", ""
-    for line in lines[1:]:
-        m = re.match(r'^([A-D])\)\s*(.*)', line)
-        if m:
-            opts[m.group(1)] = m.group(2)
-        elif line.startswith("ANSWER:"):
-            answer = line.replace("ANSWER:", "").strip()
-        elif line.startswith("EXPLANATION_EN:"):
-            exp_en = line.replace("EXPLANATION_EN:", "").strip()
-        elif line.startswith("EXPLANATION_ZH:"):
-            exp_zh = line.replace("EXPLANATION_ZH:", "").strip()
-    quiz_items.append({"q": q_text, "opts": opts, "answer": answer,
-                       "exp_en": exp_en, "exp_zh": exp_zh})
+    # Parse quiz
+    quiz_items = []
+    questions = re.split(r'Q\d+:', quiz_raw)[1:]
+    for q_block in questions:
+        lines = [l.strip() for l in q_block.strip().split("\n") if l.strip()]
+        if not lines:
+            continue
+        q_text = lines[0]
+        opts, answer, exp_en, exp_zh = {}, "", "", ""
+        for line in lines[1:]:
+            m = re.match(r'^([A-D])\)\s*(.*)', line)
+            if m:
+                opts[m.group(1)] = m.group(2)
+            elif line.startswith("ANSWER:"):
+                answer = line.replace("ANSWER:", "").strip()
+            elif line.startswith("EXPLANATION_EN:"):
+                exp_en = line.replace("EXPLANATION_EN:", "").strip()
+            elif line.startswith("EXPLANATION_ZH:"):
+                exp_zh = line.replace("EXPLANATION_ZH:", "").strip()
+        quiz_items.append({"q": q_text, "opts": opts, "answer": answer,
+                           "exp_en": exp_en, "exp_zh": exp_zh})
 
-return {"title": title, "article": article, "translation": translation,
-        "vocab": vocab_items, "quiz": quiz_items}
-```
+    return {"title": title, "article": article, "translation": translation,
+            "vocab": vocab_items, "quiz": quiz_items}
 
 # ── Generate Member HTML Page ──────────────────────────────────────────────────
-
 def generate_member_html(member: dict, data: dict) -> str:
-color  = member[“color”]
-name   = member[“name”]
-icon   = member[“icon”]
-badge  = member[“badge”]
-skey   = member[“storage_key”]
+    color  = member["color"]
+    name   = member["name"]
+    icon   = member["icon"]
+    badge  = member["badge"]
+    skey   = member["storage_key"]
 
-```
-# Build vocab HTML
-vocab_html = ""
-for v in data["vocab"]:
-    vocab_html += f"""
-    <div class="vocab-card">
-      <div class="vocab-word">{v['word']} <span class="vocab-ipa">{v['ipa']}</span></div>
-      <div class="vocab-def">{v['en']}</div>
-      <div class="vocab-zh">{v['zh']}</div>
-      <div class="vocab-ex">"{v['ex']}"</div>
-    </div>"""
+    # Build vocab HTML
+    vocab_html = ""
+    for v in data["vocab"]:
+        vocab_html += f"""
+        <div class="vocab-card">
+          <div class="vocab-word">{v['word']} <span class="vocab-ipa">{v['ipa']}</span></div>
+          <div class="vocab-def">{v['en']}</div>
+          <div class="vocab-zh">{v['zh']}</div>
+          <div class="vocab-ex">"{v['ex']}"</div>
+        </div>"""
 
-# Build quiz HTML
-quiz_html = ""
-for i, q in enumerate(data["quiz"], 1):
-    opts_html = ""
-    for letter, text in q["opts"].items():
-        opts_html += f"""
-        <label class="opt-label" data-letter="{letter}">
-          <input type="radio" name="q{i}" value="{letter}"> {letter}) {text}
-        </label>"""
-    quiz_html += f"""
-    <div class="quiz-item" id="quiz-{i}" data-answer="{q['answer']}"
-         data-exp-en="{q['exp_en'].replace('"','&quot;')}"
-         data-exp-zh="{q['exp_zh'].replace('"','&quot;')}">
-      <div class="quiz-q">Q{i}. {q['q']}</div>
-      <div class="quiz-opts">{opts_html}</div>
-      <div class="quiz-exp" id="exp-{i}" style="display:none"></div>
-    </div>"""
+    # Build quiz HTML
+    quiz_html = ""
+    for i, q in enumerate(data["quiz"], 1):
+        opts_html = ""
+        for letter, text in q["opts"].items():
+            opts_html += f"""
+            <label class="opt-label" data-letter="{letter}">
+              <input type="radio" name="q{i}" value="{letter}"> {letter}) {text}
+            </label>"""
+        quiz_html += f"""
+        <div class="quiz-item" id="quiz-{i}" data-answer="{q['answer']}"
+             data-exp-en="{q['exp_en'].replace('"','&quot;')}"
+             data-exp-zh="{q['exp_zh'].replace('"','&quot;')}">
+          <div class="quiz-q">Q{i}. {q['q']}</div>
+          <div class="quiz-opts">{opts_html}</div>
+          <div class="quiz-exp" id="exp-{i}" style="display:none"></div>
+        </div>"""
 
-article_paragraphs = "".join(f"<p>{p}</p>" for p in data["article"].split("\n") if p.strip())
-translation_paragraphs = "".join(f"<p>{p}</p>" for p in data["translation"].split("\n") if p.strip())
+    article_paragraphs = "".join(f"<p>{p}</p>" for p in data["article"].split("\n") if p.strip())
+    translation_paragraphs = "".join(f"<p>{p}</p>" for p in data["translation"].split("\n") if p.strip())
 
-return f"""<!DOCTYPE html>
-```
-
+    return f"""<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
@@ -634,78 +618,67 @@ function submitQuiz() {{
   document.getElementById('next-bar').scrollIntoView({{behavior:'smooth', block:'center'}});
 }}
 </script>
-
 </body>
 </html>"""
 
 # ── Generate Index Page ────────────────────────────────────────────────────────
-
 def generate_index_html(members: list, results: dict) -> str:
-cards_html = “”
-for m in members:
-mid = m[“id”]
-success = results.get(mid, False)
-if success:
-link = f”{mid}_{TODAY}.html”
-status = “✅ 今日文章已就緒”
-clickable = f’href=”{link}”’
-tag = “a”
-else:
-link = “#”
-status = “⚠️ 今日文章生成失敗”
-clickable = “”
-tag = “div”
-
-```
-    cards_html += f"""
-```
-
-<{tag} class=“card” {clickable} style=”–c:{m[‘color’]}”>
-<div class="card-icon">{m[‘icon’]}</div>
-<div class="card-badge">{m[‘badge’]}</div>
-<h2>{m[‘name’]}</h2>
-<div class="card-status">{status}</div>
-<div class="card-stats">
-<span>已讀 <strong id="c-{mid}">—</strong> 篇</span>
-<span>答對率 <strong id="r-{mid}">—</strong></span>
-</div>
-</{tag}>”””
-
-```
-# Build archive list
-archive_items = ""
-existing = sorted([
-    f for f in os.listdir(OUTPUT_DIR)
-    if re.match(r'tony_\d{4}-\d{2}-\d{2}\.html', f)
-], reverse=True)
-for fname in existing[:14]:
-    date = re.search(r'(\d{4}-\d{2}-\d{2})', fname).group(1)
-    is_today = "🔴 " if date == TODAY else ""
-    archive_items += f'<li>{is_today}<a href="tony_{date}.html">{date}</a> · '
+    cards_html = ""
     for m in members:
         mid = m["id"]
-        mfile = f"{mid}_{date}.html"
-        if os.path.exists(os.path.join(OUTPUT_DIR, mfile)):
-            archive_items += f'<a href="{mfile}">{m["icon"]}</a> '
-    archive_items += "</li>\n"
+        success = results.get(mid, False)
+        if success:
+            link = f"{mid}_{TODAY}.html"
+            status = "✅ 今日文章已就緒"
+            clickable = f'href="{link}"'
+            tag = "a"
+        else:
+            link = "#"
+            status = "⚠️ 今日文章生成失敗"
+            clickable = ""
+            tag = "div"
 
-storage_keys = ", ".join([f"'{m['storage_key']}'" for m in members])
-ids = [(m["id"], m["storage_key"]) for m in members]
-stats_js = "\n".join([
-    f"""  (()=>{{const s=JSON.parse(localStorage.getItem('{sk}')||'{{"count":0,"totalQ":0,"correctQ":0}}');
-```
+        cards_html += f"""
+  <{tag} class="card" {clickable} style="--c:{m['color']}">
+    <div class="card-icon">{m['icon']}</div>
+    <div class="card-badge">{m['badge']}</div>
+    <h2>{m['name']}</h2>
+    <div class="card-status">{status}</div>
+    <div class="card-stats">
+      <span>已讀 <strong id="c-{mid}">—</strong> 篇</span>
+      <span>答對率 <strong id="r-{mid}">—</strong></span>
+    </div>
+  </{tag}>"""
 
-const ce=document.getElementById(‘c-{mid}’);
-const re=document.getElementById(‘r-{mid}’);
-if(ce)ce.textContent=s.count+’ 篇’;
-if(re)re.textContent=s.totalQ>0?Math.round(s.correctQ/s.totalQ*100)+’%’:’—’;
-}})();””” for mid, sk in ids
-])
+    # Build archive list
+    archive_items = ""
+    existing = sorted([
+        f for f in os.listdir(OUTPUT_DIR)
+        if re.match(r'tony_\d{4}-\d{2}-\d{2}\.html', f)
+    ], reverse=True)
+    for fname in existing[:14]:
+        date = re.search(r'(\d{4}-\d{2}-\d{2})', fname).group(1)
+        is_today = "🔴 " if date == TODAY else ""
+        archive_items += f'<li>{is_today}<a href="tony_{date}.html">{date}</a> · '
+        for m in members:
+            mid = m["id"]
+            mfile = f"{mid}_{date}.html"
+            if os.path.exists(os.path.join(OUTPUT_DIR, mfile)):
+                archive_items += f'<a href="{mfile}">{m["icon"]}</a> '
+        archive_items += "</li>\n"
 
-```
-return f"""<!DOCTYPE html>
-```
+    storage_keys = ", ".join([f"'{m['storage_key']}'" for m in members])
+    ids = [(m["id"], m["storage_key"]) for m in members]
+    stats_js = "\n".join([
+        f"""  (()=>{{const s=JSON.parse(localStorage.getItem('{sk}')||'{{"count":0,"totalQ":0,"correctQ":0}}');
+  const ce=document.getElementById('c-{mid}');
+  const re=document.getElementById('r-{mid}');
+  if(ce)ce.textContent=s.count+' 篇';
+  if(re)re.textContent=s.totalQ>0?Math.round(s.correctQ/s.totalQ*100)+'%':'—';
+}})();""" for mid, sk in ids
+    ])
 
+    return f"""<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
@@ -761,56 +734,52 @@ return f"""<!DOCTYPE html>
 <script>
 {stats_js}
 </script>
-
 </body>
 </html>"""
 
 # ── Main ───────────────────────────────────────────────────────────────────────
-
 def main():
-os.makedirs(OUTPUT_DIR, exist_ok=True)
-results = {}
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    results = {}
 
-```
-for member in MEMBERS:
-    mid = member["id"]
+    for member in MEMBERS:
+        mid = member["id"]
+        print(f"\n{'='*50}")
+        print(f"Generating article for {member['name']} ({member['badge']})...")
+
+        try:
+            raw = call_gemini(member["prompt"])
+            data = parse_response(raw)
+
+            if not data["title"] or not data["article"]:
+                raise ValueError("Incomplete response from Gemini")
+
+            html = generate_member_html(member, data)
+            out_path = os.path.join(OUTPUT_DIR, f"{mid}_{TODAY}.html")
+            with open(out_path, "w", encoding="utf-8") as f:
+                f.write(html)
+
+            print(f"  ✅ {member['name']}: '{data['title']}'")
+            print(f"     Vocab: {len(data['vocab'])} items, Quiz: {len(data['quiz'])} questions")
+            results[mid] = True
+
+        except Exception as e:
+            print(f"  ❌ {member['name']} failed: {e}", file=sys.stderr)
+            results[mid] = False
+
+    # Generate index
+    print(f"\nGenerating index page...")
+    index_html = generate_index_html(MEMBERS, results)
+    with open(os.path.join(OUTPUT_DIR, "index.html"), "w", encoding="utf-8") as f:
+        f.write(index_html)
+    print("  ✅ index.html updated")
+
+    success_count = sum(results.values())
     print(f"\n{'='*50}")
-    print(f"Generating article for {member['name']} ({member['badge']})...")
+    print(f"Done: {success_count}/{len(MEMBERS)} articles generated for {TODAY}")
 
-    try:
-        raw = call_gemini(member["prompt"])
-        data = parse_response(raw)
+    if success_count == 0:
+        sys.exit(1)
 
-        if not data["title"] or not data["article"]:
-            raise ValueError("Incomplete response from Gemini")
-
-        html = generate_member_html(member, data)
-        out_path = os.path.join(OUTPUT_DIR, f"{mid}_{TODAY}.html")
-        with open(out_path, "w", encoding="utf-8") as f:
-            f.write(html)
-
-        print(f"  ✅ {member['name']}: '{data['title']}'")
-        print(f"     Vocab: {len(data['vocab'])} items, Quiz: {len(data['quiz'])} questions")
-        results[mid] = True
-
-    except Exception as e:
-        print(f"  ❌ {member['name']} failed: {e}", file=sys.stderr)
-        results[mid] = False
-
-# Generate index
-print(f"\nGenerating index page...")
-index_html = generate_index_html(MEMBERS, results)
-with open(os.path.join(OUTPUT_DIR, "index.html"), "w", encoding="utf-8") as f:
-    f.write(index_html)
-print("  ✅ index.html updated")
-
-success_count = sum(results.values())
-print(f"\n{'='*50}")
-print(f"Done: {success_count}/{len(MEMBERS)} articles generated for {TODAY}")
-
-if success_count == 0:
-    sys.exit(1)
-```
-
-if **name** == “**main**”:
-main()
+if __name__ == "__main__":
+    main()
