@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Angel · English Reader</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Source+Serif+4:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #faf7f2;
+    --paper: #fffef9;
+    --ink: #1a1209;
+    --muted: #6b5e4e;
+    --accent: #7d3c98;
+    --accent2: #e8d5f5;
+    --border: #d4c4b0;
+    --success: #27ae60;
+    --warn: #e67e22;
+    --code-bg: #f0ebe3;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Source Serif 4', Georgia, serif;
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+    line-height: 1.7;
+  }
+
+  /* ── Header ── */
+  header {
+    background: var(--ink);
+    color: var(--bg);
+    padding: 18px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(0,0,0,.25);
+  }
+  .header-left { display: flex; align-items: center; gap: 14px; }
+  .level-badge {
+    background: var(--accent);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    padding: 4px 10px;
+    border-radius: 2px;
+    text-transform: uppercase;
+  }
+  header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 400;
+    letter-spacing: .5px;
+  }
+  .stats-bar {
+    display: flex;
+    gap: 20px;
+    font-size: 12px;
+    color: #bbb;
+  }
+  .stats-bar span strong { color: #fff; }
+
+  /* ── Layout ── */
+  .container { max-width: 760px; margin: 0 auto; padding: 32px 20px 80px; }
+
+  /* ── Controls ── */
+  .controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+  }
+  button {
+    cursor: pointer;
+    border: none;
+    font-family: 'Source Serif 4', serif;
+    font-size: 14px;
+    border-radius: 3px;
+    transition: all .18s;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+    padding: 11px 22px;
+    font-weight: 600;
+    letter-spacing: .3px;
+  }
+  .btn-primary:hover { background: #a93226; transform: translateY(-1px); }
+  .btn-primary:disabled { background: #c0a898; cursor: not-allowed; transform: none; }
+  .btn-secondary {
+    background: transparent;
+    color: var(--muted);
+    border: 1.5px solid var(--border);
+    padding: 10px 18px;
+  }
+  .btn-secondary:hover { border-color: var(--ink); color: var(--ink); }
+  .btn-secondary:disabled { opacity: .4; cursor: not-allowed; }
+
+  /* ── Loading ── */
+  .loading-wrap {
+    text-align: center;
+    padding: 60px 20px;
+    display: none;
+  }
+  .spinner {
+    width: 36px; height: 36px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin .8s linear infinite;
+    margin: 0 auto 16px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-wrap p { color: var(--muted); font-style: italic; }
+
+  /* ── Article ── */
+  #article-area { display: none; }
+
+  .article-header {
+    border-left: 4px solid var(--accent);
+    padding-left: 20px;
+    margin-bottom: 28px;
+  }
+  .article-meta {
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .article-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    line-height: 1.3;
+    font-weight: 700;
+    color: var(--ink);
+  }
+
+  .section {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 24px 28px;
+    margin-bottom: 18px;
+  }
+  .section-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--accent2);
+  }
+  .section p { margin-bottom: 12px; font-size: 16px; }
+  .section p:last-child { margin-bottom: 0; }
+
+  /* Translation toggle */
+  .translation-wrap { display: none; }
+  .translation-wrap.visible { display: block; }
+  .translation-wrap .section { background: #f5f0e8; border-color: var(--accent2); }
+
+  /* Vocab */
+  .vocab-grid { display: grid; gap: 14px; }
+  .vocab-item {
+    background: var(--code-bg);
+    border-radius: 4px;
+    padding: 14px 16px;
+    border-left: 3px solid var(--accent);
+  }
+  .vocab-word {
+    font-family: 'Playfair Display', serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .vocab-ipa { color: var(--muted); font-size: 13px; margin: 2px 0 6px; }
+  .vocab-def { font-size: 14px; }
+  .vocab-zh { color: var(--muted); font-size: 13px; margin-top: 4px; }
+
+  /* Quiz */
+  .quiz-item { margin-bottom: 24px; }
+  .quiz-q {
+    font-weight: 600;
+    margin-bottom: 12px;
+    font-size: 15px;
+    line-height: 1.5;
+  }
+  .quiz-options { display: grid; gap: 8px; }
+  .quiz-option {
+    background: var(--code-bg);
+    border: 1.5px solid var(--border);
+    border-radius: 3px;
+    padding: 10px 14px;
+    cursor: pointer;
+    font-size: 14px;
+    text-align: left;
+    transition: all .15s;
+    font-family: 'Source Serif 4', serif;
+  }
+  .quiz-option:hover:not(:disabled) { border-color: var(--accent); background: #fdf0ee; }
+  .quiz-option.correct { background: #eafaf1; border-color: var(--success); color: #1a5e35; }
+  .quiz-option.wrong { background: #fdf2f2; border-color: #e74c3c; color: #7b1a1a; }
+  .quiz-option:disabled { cursor: default; }
+  .quiz-explanation {
+    margin-top: 12px;
+    padding: 14px 16px;
+    background: #f9f5ff;
+    border-left: 3px solid #8e44ad;
+    border-radius: 0 4px 4px 0;
+    font-size: 13.5px;
+    display: none;
+    line-height: 1.65;
+  }
+  .quiz-explanation.visible { display: block; }
+
+  /* Score */
+  .score-banner {
+    text-align: center;
+    padding: 20px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    font-size: 18px;
+    font-family: 'Playfair Display', serif;
+    display: none;
+  }
+  .score-banner.great { background: #eafaf1; color: #1e8449; border: 1.5px solid #a9dfbf; }
+  .score-banner.ok { background: #fef9e7; color: #9a7d0a; border: 1.5px solid #f9e79f; }
+  .score-banner.retry { background: #fdf2f2; color: #922b21; border: 1.5px solid #f5b7b1; }
+
+  /* Progress bar */
+  .progress-section {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 16px 22px;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .progress-label { font-size: 13px; color: var(--muted); white-space: nowrap; }
+  .progress-track {
+    flex: 1;
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 3px;
+    transition: width .4s ease;
+  }
+  .progress-count { font-size: 13px; font-weight: 600; white-space: nowrap; }
+
+  /* Action bar */
+  .action-bar {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+  }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center;
+    padding: 80px 20px;
+    color: var(--muted);
+  }
+  .empty-state .big-icon { font-size: 56px; margin-bottom: 16px; }
+  .empty-state h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    color: var(--ink);
+    margin-bottom: 8px;
+  }
+  .empty-state p { font-size: 15px; max-width: 320px; margin: 0 auto; }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--ink);
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 4px;
+    font-size: 14px;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all .3s;
+    z-index: 999;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  @media (max-width: 600px) {
+    header { padding: 14px 16px; }
+    header h1 { font-size: 16px; }
+    .stats-bar { display: none; }
+    .container { padding: 20px 14px 60px; }
+    .section { padding: 18px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <span class="level-badge">B2–C1</span>
+    <h1>Angel · English Reader</h1>
+  </div>
+  <div class="stats-bar">
+    <span>已讀 <strong id="h-count">0</strong> 篇</span>
+    <span>答對率 <strong id="h-rate">—</strong></span>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- Progress -->
+  <div class="progress-section">
+    <span class="progress-label">📚 閱讀進度</span>
+    <div class="progress-track"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+    <span class="progress-count" id="prog-count">0 篇</span>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls">
+    <button class="btn-primary" id="btn-generate" onclick="generateArticle()">
+      ✨ 產生新文章
+    </button>
+    <button class="btn-secondary" id="btn-toggle-zh" onclick="toggleTranslation()" disabled>
+      🈶 顯示中文翻譯
+    </button>
+    <button class="btn-secondary" id="btn-download" onclick="downloadMD()" disabled>
+      ⬇ 下載 Markdown
+    </button>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-wrap" id="loading">
+    <div class="spinner"></div>
+    <p>Gemini 正在生成文章，請稍候約 20 秒⋯</p>
+  </div>
+
+  <!-- Empty state -->
+  <div class="empty-state" id="empty-state">
+    <div class="big-icon">📖</div>
+    <h2>準備好了嗎，Angel？</h2>
+    <p>按下「產生新文章」，今天的英文練習開始！</p>
+  </div>
+
+  <!-- Article area -->
+  <div id="article-area">
+
+    <div class="article-header">
+      <div class="article-meta" id="art-meta">B2–C1 · <span id="art-date"></span></div>
+      <div class="article-title" id="art-title"></div>
+    </div>
+
+    <!-- English essay -->
+    <div class="section">
+      <div class="section-label">📰 English Article</div>
+      <div id="art-body"></div>
+    </div>
+
+    <!-- Translation (hidden by default) -->
+    <div class="translation-wrap" id="translation-wrap">
+      <div class="section">
+        <div class="section-label">🈶 中文翻譯</div>
+        <div id="art-zh"></div>
+      </div>
+    </div>
+
+    <!-- Vocabulary -->
+    <div class="section">
+      <div class="section-label">📚 Key Vocabulary</div>
+      <div class="vocab-grid" id="vocab-grid"></div>
+    </div>
+
+    <!-- Quiz -->
+    <div class="section">
+      <div class="section-label">✏️ Reading Quiz</div>
+      <div id="score-banner" class="score-banner"></div>
+      <div id="quiz-container"></div>
+      <div class="action-bar">
+        <button class="btn-primary" id="btn-submit" onclick="submitQuiz()" disabled>提交答案</button>
+      </div>
+      <div id="next-bar" style="display:none; text-align:center; margin-top:32px; padding-bottom:24px;">
+        <button onclick="generateArticle()" style="
+          background: var(--accent);
+          color: #fff;
+          border: none;
+          padding: 18px 48px;
+          border-radius: 50px;
+          font-size: 20px;
+          font-family: 'Source Serif 4', serif;
+          font-weight: 600;
+          cursor: pointer;
+          box-shadow: 0 4px 18px rgba(0,0,0,.18);
+          letter-spacing: .5px;
+          transition: transform .15s, box-shadow .15s;
+          display: inline-flex;
+          align-items: center;
+          gap: 10px;
+        " onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'">
+          再讀一篇 &nbsp;→
+        </button>
+      </div>
+    </div>
+
+  </div><!-- /article-area -->
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Config ────────────────────────────────────────────────────────────────
+const LEVEL_CONFIG = {
+  name: "Angel",
+  level: "B2–C1",
+  range: "B2–C1",
+  badge: "B2–C1",
+  storageKey: "flpt_angel",
+  prompt: `You are a thoughtful English teacher creating engaging B2-to-C1 level reading materials for an adult female reader who enjoys a wide range of topics.
+
+LEVEL REQUIREMENTS:
+- Vocabulary: B2–C1 CEFR, sophisticated but natural vocabulary
+- Grammar: varied and complex sentences, relative clauses, passive constructions, conditionals, participial phrases
+- Topics: rotate broadly across — lifestyle, health & wellness, travel & culture, food, parenting, design, arts, psychology, social trends, technology in daily life, environmental issues, human interest stories — choose a fresh topic each time
+- Length: 300–380 word engaging article
+- Style: Intelligent general-interest magazine (like The Atlantic lifestyle, BBC Culture, or Vogue International feature)
+- Tone: warm, thoughtful, intellectually engaging — not academic jargon, but not superficial either
+
+OUTPUT FORMAT (use these exact markers):
+===TITLE===
+[Engaging headline in Standard Title Case]
+===ARTICLE===
+[300-380 word article, flowing paragraphs, no bullet points, vivid and engaging prose]
+===TRANSLATION===
+[Full Traditional Chinese translation, natural and expressive — not stiff]
+===VOCAB===
+[Exactly 6 vocabulary items: WORD|/IPA/|English definition|中文意思|Natural example sentence in the article's context]
+===QUIZ===
+Q1: [Comprehension or inference question about the article's main idea or a key detail]
+A) [Option A]
+B) [Option B]
+C) [Option C]
+D) [Option D]
+ANSWER: [A/B/C/D]
+EXPLANATION_EN: [Clear English explanation 2 sentences]
+EXPLANATION_ZH: [Traditional Chinese explanation 2 sentences]
+Q2: [Inference question — what does the author imply or suggest?]
+A) [Option A]
+B) [Option B]
+C) [Option C]
+D) [Option D]
+ANSWER: [A/B/C/D]
+EXPLANATION_EN: [Clear English explanation]
+EXPLANATION_ZH: [Traditional Chinese explanation]
+
+Generate a fresh topic every time — never repeat the same subject area twice in a row. All Chinese must be Traditional Chinese (正體中文).`
+};
+
+const GEMINI_KEY = 'AIzaSyBK4_XDO7FN0KVjSG1U3zcN26lUx3GStDU';
+const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent`;
+
+// ── State ─────────────────────────────────────────────────────────────────
+let state = JSON.parse(localStorage.getItem(LEVEL_CONFIG.storageKey) || '{"count":0,"totalQ":0,"correctQ":0,"history":[]}');
+let currentData = null;
+let userAnswers = {};
+let quizSubmitted = false;
+
+// ── Init ──────────────────────────────────────────────────────────────────
+updateStats();
+
+function saveState() {
+  localStorage.setItem(LEVEL_CONFIG.storageKey, JSON.stringify(state));
+}
+
+function updateStats() {
+  document.getElementById('h-count').textContent = state.count;
+  const rate = state.totalQ > 0 ? Math.round(state.correctQ / state.totalQ * 100) + '%' : '—';
+  document.getElementById('h-rate').textContent = rate;
+  const pct = Math.min(state.count * 5, 100);
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-count').textContent = state.count + ' 篇';
+}
+
+// ── API Key ───────────────────────────────────────────────────────────────
+function getApiKey() {
+  return 'AIzaSyBK4_XDO7FN0KVjSG1U3zcN26lUx3GStDU';
+}
+
+// ── Generate ──────────────────────────────────────────────────────────────
+async function generateArticle() {
+  const key = getApiKey();
+  if (!key) return;
+
+  document.getElementById('empty-state').style.display = 'none';
+  document.getElementById('article-area').style.display = 'none';
+  document.getElementById('loading').style.display = 'block';
+  document.getElementById('btn-generate').disabled = true;
+  document.getElementById('btn-toggle-zh').disabled = true;
+  document.getElementById('btn-download').disabled = true;
+
+  userAnswers = {};
+  quizSubmitted = false;
+
+  try {
+    const res = await fetch(`${API_URL}?key=${key}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ role: 'user', parts: [{ text: LEVEL_CONFIG.prompt }] }],
+        generationConfig: { maxOutputTokens: 4096, temperature: 0.85 }
+      })
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error?.message || `HTTP ${res.status}`);
+    }
+
+    const data = await res.json();
+    const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    currentData = parseResponse(raw);
+    renderArticle(currentData);
+
+    state.count++;
+    saveState();
+    updateStats();
+
+  } catch (e) {
+    showToast('❌ 錯誤：' + e.message);
+    document.getElementById('empty-state').style.display = 'block';
+    if (e.message.includes('API key')) localStorage.removeItem('gemini_key');
+  } finally {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('btn-generate').disabled = false;
+  }
+}
+
+// ── Parse ─────────────────────────────────────────────────────────────────
+function parseResponse(raw) {
+  const get = (tag) => {
+    const m = raw.match(new RegExp(`===${tag}===\\s*([\\s\\S]*?)(?:===|$)`));
+    return m ? m[1].trim() : '';
+  };
+
+  const vocabRaw = get('VOCAB').split('\n').filter(l => l.includes('|'));
+  const vocab = vocabRaw.map(line => {
+    const [word, ipa, def, zh, ex] = line.split('|');
+    return { word: word?.trim(), ipa: ipa?.trim(), def: def?.trim(), zh: zh?.trim(), ex: ex?.trim() };
+  }).filter(v => v.word);
+
+  const quizSection = get('QUIZ');
+  const questions = [];
+  const qBlocks = quizSection.split(/Q\d+:/).filter(b => b.trim());
+  qBlocks.forEach(block => {
+    const lines = block.trim().split('\n').map(l => l.trim()).filter(Boolean);
+    const q = { text: lines[0], options: {}, answer: '', expEn: '', expZh: '' };
+    lines.forEach(l => {
+      if (/^[A-D]\)/.test(l)) q.options[l[0]] = l.slice(2).trim();
+      else if (l.startsWith('ANSWER:')) q.answer = l.replace('ANSWER:', '').trim();
+      else if (l.startsWith('EXPLANATION_EN:')) q.expEn = l.replace('EXPLANATION_EN:', '').trim();
+      else if (l.startsWith('EXPLANATION_ZH:')) q.expZh = l.replace('EXPLANATION_ZH:', '').trim();
+    });
+    if (q.text && q.answer) questions.push(q);
+  });
+
+  return {
+    title: get('TITLE'),
+    body: get('ARTICLE'),
+    zh: get('TRANSLATION'),
+    vocab,
+    questions
+  };
+}
+
+// ── Render ────────────────────────────────────────────────────────────────
+function renderArticle(d) {
+  document.getElementById('art-title').textContent = d.title || 'Today\'s Article';
+  document.getElementById('art-date').textContent = new Date().toLocaleDateString('zh-TW');
+
+  // Body
+  const bodyEl = document.getElementById('art-body');
+  bodyEl.innerHTML = d.body.split('\n\n').filter(Boolean).map(p => `<p>${p}</p>`).join('');
+
+  // Translation
+  const zhEl = document.getElementById('art-zh');
+  zhEl.innerHTML = d.zh.split('\n\n').filter(Boolean).map(p => `<p>${p}</p>`).join('');
+  document.getElementById('translation-wrap').classList.remove('visible');
+  document.getElementById('btn-toggle-zh').textContent = '🈶 顯示中文翻譯';
+
+  // Vocab
+  const vocabEl = document.getElementById('vocab-grid');
+  vocabEl.innerHTML = d.vocab.map(v => `
+    <div class="vocab-item">
+      <div class="vocab-word">${v.word}</div>
+      <div class="vocab-ipa">${v.ipa || ''}</div>
+      <div class="vocab-def">${v.def || ''}</div>
+      <div class="vocab-zh">📌 ${v.zh || ''}</div>
+      ${v.ex ? `<div class="vocab-def" style="margin-top:6px;font-style:italic;color:#666">✦ ${v.ex}</div>` : ''}
+    </div>`).join('');
+
+  // Quiz
+  const quizEl = document.getElementById('quiz-container');
+  quizEl.innerHTML = d.questions.map((q, qi) => `
+    <div class="quiz-item" id="qi-${qi}">
+      <div class="quiz-q">Q${qi+1}. ${q.text}</div>
+      <div class="quiz-options">
+        ${Object.entries(q.options).map(([k, v]) => `
+          <button class="quiz-option" id="opt-${qi}-${k}" onclick="selectOption(${qi},'${k}')">${k}) ${v}</button>
+        `).join('')}
+      </div>
+      <div class="quiz-explanation" id="exp-${qi}">
+        <strong>✅ Explanation:</strong> ${q.expEn}<br><br>
+        <strong>💡 解析：</strong> ${q.expZh}
+      </div>
+    </div>`).join('');
+
+  document.getElementById('score-banner').style.display = 'none';
+  document.getElementById('btn-submit').disabled = true;
+  document.getElementById('btn-submit').style.display = 'inline-block';
+  document.getElementById('next-bar') && (document.getElementById('next-bar').style.display = 'none');
+
+  document.getElementById('article-area').style.display = 'block';
+  document.getElementById('btn-toggle-zh').disabled = false;
+  document.getElementById('btn-download').disabled = false;
+
+  document.getElementById('article-area').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── Quiz ──────────────────────────────────────────────────────────────────
+function selectOption(qi, key) {
+  if (quizSubmitted) return;
+  userAnswers[qi] = key;
+  // visual feedback
+  const opts = document.querySelectorAll(`#qi-${qi} .quiz-option`);
+  opts.forEach(o => o.style.borderColor = '');
+  document.getElementById(`opt-${qi}-${key}`).style.borderColor = 'var(--accent)';
+  document.getElementById(`opt-${qi}-${key}`).style.background = '#fdf0ee';
+
+  const allAnswered = currentData.questions.every((_, i) => userAnswers[i]);
+  document.getElementById('btn-submit').disabled = !allAnswered;
+}
+
+function submitQuiz() {
+  if (!currentData || quizSubmitted) return;
+  quizSubmitted = true;
+
+  let correct = 0;
+  currentData.questions.forEach((q, qi) => {
+    const chosen = userAnswers[qi];
+    const isCorrect = chosen === q.answer;
+    if (isCorrect) correct++;
+
+    Object.keys(q.options).forEach(k => {
+      const btn = document.getElementById(`opt-${qi}-${k}`);
+      btn.disabled = true;
+      btn.style.borderColor = '';
+      btn.style.background = '';
+      if (k === q.answer) btn.classList.add('correct');
+      else if (k === chosen && !isCorrect) btn.classList.add('wrong');
+    });
+
+    document.getElementById(`exp-${qi}`).classList.add('visible');
+  });
+
+  state.totalQ += currentData.questions.length;
+  state.correctQ += correct;
+  saveState();
+  updateStats();
+
+  const total = currentData.questions.length;
+  const banner = document.getElementById('score-banner');
+  banner.style.display = 'block';
+  if (correct === total) {
+    banner.className = 'score-banner great';
+    banner.textContent = `🌸 全對！${correct} / ${total} — 太棒了，Angel！`;
+  } else if (correct >= total / 2) {
+    banner.className = 'score-banner ok';
+    banner.textContent = `👍 答對 ${correct} / ${total}，繼續加油！`;
+  } else {
+    banner.className = 'score-banner retry';
+    banner.textContent = `📖 答對 ${correct} / ${total}，再讀一遍吧！`;
+  }
+
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('next-bar') && (document.getElementById('next-bar').style.display = 'block');
+}
+
+// ── Translation toggle ─────────────────────────────────────────────────────
+function toggleTranslation() {
+  const wrap = document.getElementById('translation-wrap');
+  const btn = document.getElementById('btn-toggle-zh');
+  const visible = wrap.classList.toggle('visible');
+  btn.textContent = visible ? '🈚 隱藏中文翻譯' : '🈶 顯示中文翻譯';
+}
+
+// ── Download ──────────────────────────────────────────────────────────────
+function downloadMD() {
+  if (!currentData) return;
+  const d = currentData;
+  const date = new Date().toLocaleDateString('zh-TW');
+  let md = `# ${d.title}\n\n`;
+  md += `> Level: B2 | Date: ${date} | Jill's English Reader\n\n`;
+  md += `## 📰 Article\n\n${d.body}\n\n`;
+  md += `## 🈶 Translation\n\n${d.zh}\n\n`;
+  md += `## 📚 Vocabulary\n\n`;
+  d.vocab.forEach(v => { md += `**${v.word}** ${v.ipa} — ${v.def}\n中文：${v.zh}\n例句：${v.ex}\n\n`; });
+  md += `## ✏️ Quiz\n\n`;
+  d.questions.forEach((q, i) => {
+    md += `**Q${i+1}.** ${q.text}\n`;
+    Object.entries(q.options).forEach(([k, v]) => { md += `${k}) ${v}\n`; });
+    md += `\n✅ Answer: ${q.answer}\n${q.expEn}\n${q.expZh}\n\n`;
+  });
+
+  const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `angel-reader-${new Date().toISOString().slice(0,10)}.md`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('✅ 已下載 Markdown 檔案！');
+}
+
+// ── Toast ─────────────────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>
