@@ -11,6 +11,7 @@ import urllib.error
 import datetime
 import re
 import sys
+import time
 
 # ── Config ────────────────────────────────────────────────────────────────────
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
@@ -179,7 +180,7 @@ Today's date: {TODAY}. All Chinese must be Traditional Chinese (正體中文). M
 ]
 
 # ── Gemini API Call ────────────────────────────────────────────────────────────
-def call_gemini(prompt: str) -> str:
+def call_gemini(prompt: str, max_retries: int = 5) -> str:
     if not GEMINI_API_KEY:
         raise ValueError("GEMINI_API_KEY not set")
 
@@ -188,16 +189,28 @@ def call_gemini(prompt: str) -> str:
         "generationConfig": {"maxOutputTokens": 4096, "temperature": 0.85}
     }).encode("utf-8")
 
-    req = urllib.request.Request(
-        f"{GEMINI_URL}?key={GEMINI_API_KEY}",
-        data=payload,
-        headers={"Content-Type": "application/json"},
-        method="POST"
-    )
-
-    with urllib.request.urlopen(req, timeout=60) as resp:
-        data = json.loads(resp.read().decode("utf-8"))
-        return data["candidates"][0]["content"]["parts"][0]["text"]
+    delay = 30  # initial backoff in seconds for 429 errors
+    for attempt in range(max_retries):
+        req = urllib.request.Request(
+            f"{GEMINI_URL}?key={GEMINI_API_KEY}",
+            data=payload,
+            headers={"Content-Type": "application/json"},
+            method="POST"
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=60) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+                return data["candidates"][0]["content"]["parts"][0]["text"]
+        except urllib.error.HTTPError as e:
+            if e.code == 429:
+                if attempt < max_retries - 1:
+                    print(f"  ⏳ Rate limited (429). Waiting {delay}s before retry {attempt + 1}/{max_retries - 1}...", file=sys.stderr)
+                    time.sleep(delay)
+                    delay *= 2  # exponential backoff
+                else:
+                    raise
+            else:
+                raise
 
 # ── Parse Response ─────────────────────────────────────────────────────────────
 def parse_response(raw: str) -> dict:
@@ -742,10 +755,14 @@ def main():
     os.makedirs(OUTPUT_DIR, exist_ok=True)
     results = {}
 
-    for member in MEMBERS:
+    for i, member in enumerate(MEMBERS):
         mid = member["id"]
         print(f"\n{'='*50}")
         print(f"Generating article for {member['name']} ({member['badge']})...")
+
+        # Brief pause between requests to avoid rate limiting (skip before first request)
+        if i > 0:
+            time.sleep(5)
 
         try:
             raw = call_gemini(member["prompt"])
